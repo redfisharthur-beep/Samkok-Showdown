@@ -147,3 +147,5 @@ npm test
 修改請遵守 AGENTS.md，直接修改原始模組並記錄 CHANGELOG.md。
 
 非戰鬥畫面共用使用者提供的 `battlefield/background.webp` 全螢幕背景，置中等比例填滿；戰鬥保持 `battlefield-01.webp`。
+
+手機牌組採緊湊高度，桌面保留原尺寸。法術以動態範圍圈、火球爆炸、落雷、分波箭雨與持續火焰辨識，繪圖不改戰鬥數值。
