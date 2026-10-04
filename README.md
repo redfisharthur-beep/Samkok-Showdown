@@ -145,3 +145,5 @@ npm test
 圖像清單與待補圖見 public/assets/README.md。沒有商城、領土貨幣收益或獨立精靈動畫；目前不引入未定義的經濟系統。伺服器仍以輪詢同步，尚非 WebSocket。
 
 修改請遵守 AGENTS.md，直接修改原始模組並記錄 CHANGELOG.md。
+
+非戰鬥畫面共用使用者提供的 `battlefield/background.webp` 全螢幕背景，置中等比例填滿；戰鬥保持 `battlefield-01.webp`。

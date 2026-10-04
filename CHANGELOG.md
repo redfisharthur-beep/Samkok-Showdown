@@ -1,5 +1,12 @@
 # 更新紀錄
 
+## 0.4.6 · 2026-10-04
+- 修改原檔 `public/style.css`、`README.md`，無覆寫補丁。
+- 使用最新上傳的 `public/assets/battlefield/background.webp` 作為非戰鬥畫面共用全螢幕背景，置中等比例填滿、長頁固定；首頁、陣營選擇、牌組、國戰、戰績、配對及結算均適用。
+- 戰鬥介面沿用原 `battlefield-01.webp` 與完整不透明戰鬥容器。
+- 驗證：Chromium 手機／桌面頁面流程與背景載入核對、差異檢查。
+- 尚待使用者部署 Cloudflare 最新 main；本次不部署 Cloudflare。
+
 ## 0.4.5 · 2026-10-04
 - 修改原檔 `public/src/engine.js`、`tests/engine.test.js`、`README.md`，無覆寫補丁。
 - 軍醫優先追隨目前血量數值最少的受傷友軍，改以實際生命值排序，不使用生命百分比；治療距離 150、每秒恢復 65，不超過生命上限。
