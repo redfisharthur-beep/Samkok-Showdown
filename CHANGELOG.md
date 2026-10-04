@@ -1,5 +1,12 @@
 # 更新紀錄
 
+## 0.4.13 · 2026-10-04
+- 修改原檔 `public/src/app.js`、`public/style.css`、`public/assets/README.md`，無覆寫補丁。
+- 移除配對秒數及更新邏輯、選中州名稱／歸屬文字、無進度時的攻佔說明；實際選州、配對及攻佔規則保留。
+- 國戰攻州按鈕改使用 `battlefield/fight.webp`，保留圖示無障礙名稱與點擊配對，守州維持原按鈕。
+- 驗證：58 項測試、語法與差異檢查通過；Chromium 手機／桌面與雙人流程檢查。
+- 尚待使用者上傳 `public/assets/battlefield/fight.webp`（最新 main 尚無此檔）及部署 Cloudflare；本次不產生替代圖片、不部署 Cloudflare。
+
 ## 0.4.12 · 2026-10-04
 - 修改原檔 `public/src/app.js`、`public/style.css`，無覆寫補丁。
 - 移除試煉結算貢獻顯示、所有結算的再戰按鈕及其事件；保留返回與真人國戰貢獻。試煉紀錄仍正常保存。
