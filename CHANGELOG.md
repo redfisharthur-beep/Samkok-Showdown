@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 0.4.7 · 2026-10-04
+- 修改原檔 `public/src/app.js`、`public/style.css`，無覆寫補丁。
+- 首頁登入後不再顯示 LINE 大頭貼與名字，移除不再使用的樣式；保留未登入時的 LINE 登入按鈕、帳號資料及戰鬥名字。
+- 驗證：JavaScript 語法、54 項測試與差異檢查通過。
+- 尚待使用者部署 Cloudflare 最新 main；本次不部署 Cloudflare。
+
 ## 0.4.6 · 2026-10-04
 - 修改原檔 `public/style.css`、`README.md`，無覆寫補丁。
 - 使用最新上傳的 `public/assets/battlefield/background.webp` 作為非戰鬥畫面共用全螢幕背景，置中等比例填滿、長頁固定；首頁、陣營選擇、牌組、國戰、戰績、配對及結算均適用。
