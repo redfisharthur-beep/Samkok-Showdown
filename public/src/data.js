@@ -7,5 +7,7 @@ export const CARDS=[...generals.map(([id,name,faction,cost,hp,atk,range,speed,ab
 export const card=id=>CARDS.find(c=>c.id===id);
 export const pool=f=>CARDS.filter(c=>c.faction==='all'||c.faction===f);
 export const defaultDeck=f=>[...CARDS.filter(c=>c.faction===f).map(c=>c.id),'spear','archer','fireball','arrows'];
-export function validateDeck(f,deck){return deck.length===8&&new Set(deck).size===8&&deck.every(id=>card(id)&&(card(id).faction==='all'||card(id).faction===f))&&deck.filter(id=>card(id).type==='spell').length<=3;}
+export function validateDeck(f,deck){return Object.hasOwn(FACTIONS,f)&&Array.isArray(deck)&&deck.length===8&&new Set(deck).size===8&&deck.every(id=>card(id)&&(card(id).faction==='all'||card(id).faction===f))&&deck.filter(id=>card(id).type==='spell').length<=3;}
 export const asset=(type,id)=>`/assets/${type}/${id}.webp`;
+
+export function trialDeck(f,style='rush'){const g=CARDS.filter(c=>c.faction===f).map(c=>c.id);const troops={rush:['spear','cavalry','scout','archer','inspire','arrows'],defense:['shield','archer','medic','spear','guard','fireball'],siege:['shield','ram','catapult','medic','guard','arrows']}[style]||['spear','cavalry','scout','archer','inspire','arrows'];return [g[0],g[3],...troops];}
