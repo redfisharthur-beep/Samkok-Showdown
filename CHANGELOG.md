@@ -1,5 +1,12 @@
 # 更新紀錄
 
+## 0.4.5 · 2026-10-04
+- 修改原檔 `public/src/engine.js`、`tests/engine.test.js`、`README.md`，無覆寫補丁。
+- 軍醫優先追隨目前血量數值最少的受傷友軍，改以實際生命值排序，不使用生命百分比；治療距離 150、每秒恢復 65，不超過生命上限。
+- 無傷者時跟隨前線部隊，無其他部隊時自行向前，沿原雙橋尋路；不再停在主堡前等待。保留原移速與治療冷卻，試煉及真人共用相同引擎。
+- 驗證：54 項測試全數通過，新增雙方實際生命值優先、滿血上限、治療冷卻、前線跟隨及單獨向前過橋檢查；語法與差異檢查通過。
+- 尚待使用者部署 Cloudflare 最新 main；本次不部署 Cloudflare。
+
 ## 0.4.4 · 2026-10-04
 - 修改原檔 `public/src/app.js`、`public/style.css`、`public/assets/README.md`、`README.md`，無覆寫補丁。
 - 讀取最新 main 的使用者上傳資產：`battlefield/Trial.webp`、`Battle.webp`、`Nation-vs-Nation War.webp`、`Deck.webp`、`Record.webp`、`equipment.webp`、`Changing.webp`、`return.webp`、`victor.webp`、`fail.webp`。
