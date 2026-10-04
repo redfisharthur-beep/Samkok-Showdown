@@ -1,10 +1,17 @@
+# 更新紀錄
+
+## 0.3.3 · 2026-10-04
+- 修改原檔 `public/src/app.js`、`public/style.css`、`src/worker.js`、`tests/backend.test.js`、`DEPLOYMENT.md`；新增原生共用模組 `public/src/territory.js` 與驗證 `tests/territory.test.js`，無覆寫補丁。
+- 「國戰分布」改為「國戰」。使用最新 main 上傳的 `public/assets/battlefield/map.webp`，保留原圖、州名、透明邊界及完整比例，加入四色莫蘭迪勢力面積與精簡百分比圖例，手機圖例為兩列。
+- 伺服器以各國累積真人對戰貢獻計算佔領比例，面積總和 100%；地圖遮罩按不透明像素配額著色，零貢獻不佔面積，全體零貢獻保持原圖並顯示尚未佔領。AI 與本機資料不參與。
+- 這是貢獻強度投影，並未新增逐州攻佔；原圖的不透明海域裝飾亦屬顯示面積。面積於進入國戰頁取得最新伺服器資料。
+- 驗證：JavaScript 語法、24 項自動測試、git diff；新增比例守恆、透明像素、確定性、像素配額與雲端資料來源驗證。瀏覽器預覽因測試用 Chromium 下載失敗未完成。Cloudflare 正式部署、LINE 真人端到端及實機顯示仍由使用者部署後核對。
+
 ## 0.3.2 · 2026-10-04
 - 原檔：`src/worker.js`、`public/src/app.js`、`tests/backend.test.js`、`DEPLOYMENT.md`。
 - 真人對戰改為自動配對，移除建立／選擇房間與公開加入 API。伺服器交易配對不同帳號，重複請求維持同一對戰；等待時可取消，離線等待項目 15 秒過期。
 - 雙方完成素材預載並回報就緒後，同一伺服器戰局才開始；重新整理可恢復配對或戰鬥。
 - 驗證：JavaScript 語法、完整自動測試、git diff 檢查。尚未執行正式 LINE 雙帳號及 Cloudflare 負載測試；需由使用者重新部署 main。
-
-# 更新紀錄
 
 ## 2026-10-04 · 0.3.1
 
