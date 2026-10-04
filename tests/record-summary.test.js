@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {summarizeRecords} from '../public/src/record-summary.js';
+test('favorite cards use all recorded decks while details show newest five',()=>{const records=Array.from({length:8},(_,i)=>({at:i,deck:['guanyu','spear','fireball']}));records[7].deck=['lvbu','archer','arrows'];const s=summarizeRecords(records,'trial');assert.deepEqual(s.favorites.map(f=>[f.card.id,f.count]),[['guanyu',7],['spear',7],['fireball',7]]);assert.deepEqual(s.recent.map(r=>r.at),[7,6,5,4,3]);assert.equal(records[0].at,0);});
+test('human summaries only count own deck and tolerate old missing decks',()=>{const records=[{at:2,players:[{id:'a',deck:['diaochan','medic','guard']},{id:'b',deck:['guanyu','spear','fireball']}]},{at:1,players:[{id:'a'}]}];const s=summarizeRecords(records,'human','a');assert.deepEqual(s.favorites.map(f=>f.card.id),['diaochan','medic','guard']);assert.equal(summarizeRecords([],'trial').favorites.every(f=>f.card===null&&f.count===0),true);});
