@@ -1,5 +1,13 @@
 # 更新紀錄
 
+## 0.4.4 · 2026-10-04
+- 修改原檔 `public/src/app.js`、`public/style.css`、`public/assets/README.md`、`README.md`，無覆寫補丁。
+- 讀取最新 main 的使用者上傳資產：`battlefield/Trial.webp`、`Battle.webp`、`Nation-vs-Nation War.webp`、`Deck.webp`、`Record.webp`、`equipment.webp`、`Changing.webp`、`return.webp`、`victor.webp`、`fail.webp`。
+- 首頁試煉／對戰／國戰及牌組／戰績／裝備以圖像按鈕呈現，跳槽保持牌組右上角，各頁返回改圖像。戰績試煉／對戰分頁使用同圖，保留選中狀態。裝備尚無系統，僅接入口與未開放提示，不產生虛構功能。
+- 勝利／失敗結算改指向最新 .webp 路徑，移除已不存在的 .png 引用。原圖完整等比例顯示，保留按鈕事件、無障礙名稱與缺圖文字；圖片成功載入時隱藏重複文字佔位。
+- 驗證：JavaScript 語法、差異檢查；Chromium 手機／桌面核對首頁六張圖與排列、跳槽／返回圖、裝備提示、牌組長按、國戰點選、雙人配對與出牌、斷線重連、雙方勝敗圖片、真人與試煉戰績流程，圖片可解碼且無頁面錯誤／橫向溢出。
+- 尚待：使用者部署 Cloudflare 最新 main；裝備功能與平手圖尚未提供，本次不部署 Cloudflare。
+
 ## 0.4.3 · 2026-10-04
 - 修改原檔 `public/src/app.js`、`public/style.css`、`README.md`，無覆寫補丁。
 - 首頁刪除轉國入口，「跳槽」移至牌組右上角；取消或成功跳槽後返回牌組，成功時呈現新陣營卡池，原轉國令、冷卻與貢獻規則沿用。

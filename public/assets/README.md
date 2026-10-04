@@ -5,8 +5,11 @@
 | 位置 | 檔名 | 用途 |
 |---|---|---|
 | lords/ | shu.webp、wei.webp、wu.webp、qun.webp | 劉備、曹操、孫權、董卓；首頁與陣營選擇 |
+| battlefield/ | Trial.webp、Battle.webp、Nation-vs-Nation War.webp | 試煉／對戰／國戰按鈕 |
+| battlefield/ | Deck.webp、Record.webp、equipment.webp | 牌組／戰績／裝備入口；裝備尚未開放 |
+| battlefield/ | Changing.webp、return.webp | 跳槽／返回按鈕 |
 | battlefield/ | map.webp | 13 州國戰地圖，保留海域與州名 |
-| battlefield/ | victor.png、fail.png | 使用者提供的勝利／敗北結算圖 |
+| battlefield/ | victor.webp、fail.webp | 使用者提供的勝利／敗北結算圖 |
 | ui/ | draw.webp | 平手結算圖；尚待使用者提供 |
 | battlefield/ | battlefield-01.webp | 941:1672 直立戰場底圖（目前原圖 941×1672），不含建築與卡牌 |
 | battlefield/ | tower-blue.webp、tower-red.webp、castle-blue.webp、castle-red.webp | 副塔、主城 |
@@ -66,7 +69,7 @@
 
 ## 本次待補圖
 
-勝利與敗北已使用 `public/assets/battlefield/victor.png`、`fail.png`。平手圖請放入 `public/assets/ui/draw.webp`。建議相同比例、透明背景；系統完整呈現，不裁切。缺圖時只顯示簡短結果文字，遊戲照常結算。
+勝利與敗北已使用 `public/assets/battlefield/victor.webp`、`fail.webp`。平手圖請放入 `public/assets/ui/draw.webp`。建議相同比例、透明背景；系統完整呈現，不裁切。缺圖時只顯示簡短結果文字，遊戲照常結算。
 
 動作目前使用原圖的位移、受擊與淡出。若日後要完整逐格動畫，再提供各角色 idle／walk／attack／death 素材與格數、影格尺寸、播放速度；目前無需補這些圖才能使用。
 
