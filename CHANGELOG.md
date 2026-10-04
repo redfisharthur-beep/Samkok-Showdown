@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 2026-10-04 · 0.3.0
+
+修改 public/src/app.js、public/src/engine.js、public/style.css、wrangler.jsonc，新增原生後端 src/worker.js、tests/backend.test.js 與 DEPLOYMENT.md：接入 LINE Channel 2011852042、正式域名與安全回呼驗證；伺服器保存玩家陣營／牌組／轉國條件。新增真人房間，Durable Objects 模擬與保存戰鬥，客戶端以 200 ms 輪詢同步，身份與操作由後端驗證。保存真人戰績、牌組、操作時間線，四國分布僅來自雲端帳號與真人比賽。加入同頁籤刷新恢復，AI 紀錄保留本機。最新四張絕招圖已在倉庫並沿用。
+
+確認：JavaScript 語法、差異檢查與 18 項測試通過，包括未登入、來源驗證、雲端牌組、轉國冷卻、房間成員、隱藏敵方手牌及伺服器模擬。尚需使用者設定 LINE_CHANNEL_SECRET、LINE Callback URL 並部署後進行真實雙帳號測試。尚未有 WebSocket、領土國戰、賽季重置、大量玩家負載驗證；部署步驟與範圍寫入 DEPLOYMENT.md。
+
 ## 2026-10-04 · 0.2.20
 
 直接修改 public/src/engine.js、tests/engine.test.js：AI 健康主公隨三名以上友軍推進，低血仍退守；路線考慮弱塔、敵我壓力及每 12 秒的左右路偏好。優先補前排，有前排再提高攻城兵優先級，減少無軍隊時的士氣等待。法術手牌停滯至少 6 秒且士氣達 8 時，依有效敵人／建築或友軍位置輪轉手牌，避免永久等待。
