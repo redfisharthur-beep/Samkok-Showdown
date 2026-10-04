@@ -69,3 +69,5 @@
 勝利與敗北已使用 `public/assets/battlefield/victor.png`、`fail.png`。平手圖請放入 `public/assets/ui/draw.webp`。建議相同比例、透明背景；系統完整呈現，不裁切。缺圖時只顯示簡短結果文字，遊戲照常結算。
 
 動作目前使用原圖的位移、受擊與淡出。若日後要完整逐格動畫，再提供各角色 idle／walk／attack／death 素材與格數、影格尺寸、播放速度；目前無需補這些圖才能使用。
+
+國戰輪廓以目前 `map.webp` 的 1448 × 1086、4:3 原圖為基準，使用共用邊界組合 13 州。若日後更換圖的州界或比例，須同步重新定位 `public/src/territory.js`，不可沿用舊座標。
