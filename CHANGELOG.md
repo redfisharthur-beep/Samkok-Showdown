@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 2026-10-04 · 0.2.18
+
+直接修改 public/src/app.js、public/style.css：依使用者畫面將首頁改成主公圖在上、操作列在下的置中排列。AI 對戰採灰米色，牌組採灰藍、戰績採灰綠、轉換陣營採灰紫，選項等寬，手機同步排列。
+
+確認：查看使用者附件，JavaScript 語法、差異檢查及 13 項測試通過。實機排版仍待確認。
+
 ## 2026-10-04 · 0.2.17
 
 直接修改 public/index.html、public/style.css、public/src/app.js：載入 Google Fonts Noto Sans TC 400／500／700 字重，介面、表單與 Canvas 戰場文字統一使用 Noto Sans TC。
