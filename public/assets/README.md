@@ -4,7 +4,7 @@
 
 | 位置 | 檔名 | 用途 |
 |---|---|---|
-| lords/ | shu.webp、wei.webp、wu.webp、qun.webp | 劉備、曹操、孫權、董卓；首頁與戰場 |
+| lords/ | shu.webp、wei.webp、wu.webp、qun.webp | 劉備、曹操、孫權、董卓；首頁與陣營選擇 |
 | battlefield/ | battlefield-01.webp | 3:5 直立戰場底圖（建議 2400×4000），不含建築與卡牌 |
 | battlefield/ | tower-blue.webp、tower-red.webp、castle.webp | 副塔、主城 |
 | cards/ | 每張卡 ID.webp | 牌組與手牌立繪 |
@@ -28,3 +28,16 @@
 ## 地圖對齊（0.2.0）
 
 邏輯畫布 600×1000，玩家下方、敵軍上方。河流橫跨 y=460–540；橋中心 x=150、450，橋寬 88。玩家箭塔中心 (150,800)、(450,800)，主城 (300,920)；敵軍箭塔中心 (150,200)、(450,200)，主城 (300,80)。請依這些比例預留位置。
+
+## 主公戰場圖
+
+所有圖放在 `public/assets/lords/`。首頁及陣營選擇使用原本四張圖；戰場依隊伍選擇以下圖檔，blue 為玩家（下方）、red 為敵方（上方），與主公所屬陣營無關。
+
+| 陣營 | 玩家戰場圖 | 敵方戰場圖 |
+|---|---|---|
+| 蜀 | f-blue-shu.webp | f-red-shu.webp |
+| 魏 | f-blue-wei.webp | f-red-wei.webp |
+| 吳 | f-blue-wu.webp | f-red-wu.webp |
+| 群 | f-blue-qun.webp | f-red-qun.webp |
+
+缺少戰場圖時維持名稱佔位，不會改用首頁立繪。
