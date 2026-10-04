@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 0.3.4 · 2026-10-04
+- 修改原檔 `public/src/app.js`、`public/src/engine.js`、`tests/engine.test.js`、`DEPLOYMENT.md`。
+- 首頁「AI 對戰」改為「試煉」，試煉戰場不渲染敵方名字；真人對手名字保留。
+- 每局依最近 20 場本機試煉勝率調整難度，40% 以下入門、80% 以上完整戰術；不足 5 場平緩提升。透過決策間隔、主公走位、法術及攻防選擇提高挑戰，敗場降低後續難度。不增加角色移速、血量、傷害或士氣，不影響真人模擬與國戰。
+- 驗證：語法、27 項自動測試及 git diff；新增入門／中階完整戰局模擬、勝率單調性、小樣本、近期敗場降難度，以及兵種數值一致／戰術與反應差異驗證。正式實機體驗仍需重新部署後核對。
+
 ## 0.3.3 · 2026-10-04
 - 修改原檔 `public/src/app.js`、`public/style.css`、`src/worker.js`、`tests/backend.test.js`、`DEPLOYMENT.md`；新增原生共用模組 `public/src/territory.js` 與驗證 `tests/territory.test.js`，無覆寫補丁。
 - 「國戰分布」改為「國戰」。使用最新 main 上傳的 `public/assets/battlefield/map.webp`，保留原圖、州名、透明邊界及完整比例，加入四色莫蘭迪勢力面積與精簡百分比圖例，手機圖例為兩列。
