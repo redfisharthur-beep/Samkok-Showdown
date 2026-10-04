@@ -44,16 +44,16 @@
 
 ## 主公戰場圖
 
-所有圖放在 `public/assets/lords/`。首頁及陣營選擇使用原本四張圖；戰場依隊伍選擇以下圖檔，blue 為玩家（下方）、red 為敵方（上方），與主公所屬陣營無關。
+所有圖放在 `public/assets/lords/`。玩家戰場使用 b- 前綴；敵方戰場與首頁／陣營選擇共用原本圖檔。
 
-| 陣營 | 玩家戰場圖 | 敵方戰場圖 |
-|---|---|---|
-| 蜀 | f-blue-shu.webp | f-red-shu.webp |
-| 魏 | f-blue-wei.webp | f-red-wei.webp |
-| 吳 | f-blue-wu.webp | f-red-wu.webp |
-| 群 | f-blue-qun.webp | f-red-qun.webp |
+| 主公 | 首頁／陣營選擇 | 玩家戰場圖 | 敵方戰場圖 |
+|---|---|---|---|
+| 劉備 | shu.webp | b-shu.webp | shu.webp |
+| 曹操 | wei.webp | b-wei.webp | wei.webp |
+| 孫權 | wu.webp | b-wu.webp | wu.webp |
+| 董卓 | qun.webp | b-qun.webp | qun.webp |
 
-缺少戰場圖時維持名稱佔位，不會改用首頁立繪。
+缺少對應圖檔時維持名稱佔位。
 
 ## 五格戰鬥操作列
 
