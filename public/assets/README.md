@@ -6,7 +6,7 @@
 |---|---|---|
 | lords/ | shu.webp、wei.webp、wu.webp、qun.webp | 劉備、曹操、孫權、董卓；首頁與陣營選擇 |
 | battlefield/ | battlefield-01.webp | 941:1672 直立戰場底圖（目前原圖 941×1672），不含建築與卡牌 |
-| battlefield/ | tower-blue.webp、tower-red.webp、castle.webp | 副塔、主城 |
+| battlefield/ | tower-blue.webp、tower-red.webp、castle-blue.webp、castle-red.webp | 副塔、主城 |
 | cards/ | 每張卡 ID.webp | 牌組與手牌立繪 |
 | units/ | 每張兵種／武將 ID.webp | 戰場單位立繪 |
 
@@ -54,3 +54,7 @@
 | 群 | f-blue-qun.webp | f-red-qun.webp |
 
 缺少戰場圖時維持名稱佔位，不會改用首頁立繪。
+
+## 五格戰鬥操作列
+
+背景下方五格由左到右：手牌 1–4、主公絕招。四張手牌圖使用 cards/<卡 ID>.webp；絕招圖使用 ui/ultimate-shu.webp、ultimate-wei.webp、ultimate-wu.webp、ultimate-qun.webp，依玩家陣營載入。缺圖顯示名稱。主城依玩家／敵方載入 castle-blue.webp／castle-red.webp。建築不再繪製圓框，主城寬 106、箭塔寬 76，保持圖像比例，底部對齊平台下緣。
