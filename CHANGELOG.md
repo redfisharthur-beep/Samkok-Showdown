@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 0.4.10 · 2026-10-04
+- 修改原檔 `public/src/audio.js`、`tests/audio.test.js`；更名使用者音檔 `public/assets/audio/bgm-home..mp3` 為 `bgm-home.mp3`，音檔內容不變。
+- 修正首頁音檔多一個點造成找不到資產。首頁與戰鬥音樂沿用同一個已由互動啟動的播放器，切換來源並載入，避免為戰鬥建立新的未解鎖播放器；載入失敗後下一次互動可重試。
+- 驗證：58 項測試、語法及差異檢查通過；Chromium 使用真實兩首音檔，先點擊播放首頁、再延後切換戰鬥，兩首播放時間均增加、無音訊錯誤、共用一個播放器。
+- 尚待使用者部署 Cloudflare 最新 main 後確認；正式站讀取回傳 403，未能確認線上部署版本，本次不部署 Cloudflare。
+
 ## 0.4.9 · 2026-10-04
 - 修改原檔 `public/src/app.js`、`public/assets/README.md`；新增正式音訊模組 `public/src/audio.js`、`tests/audio.test.js` 與 `public/assets/audio/README.md`，無覆寫補丁。
 - 接入首頁／非戰鬥與戰鬥循環音樂、實際受傷打擊、部隊／主公陣亡、勝利／失敗結算音效；真人使用本地視角同步生命值判斷，重複快照不重播。

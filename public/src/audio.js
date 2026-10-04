@@ -4,10 +4,10 @@ export function createGameAudio(makeAudio=src=>new Audio(src),clock=()=>performa
  function track(key){if(!tracks.has(key)){const a=makeAudio('/assets/audio/'+FILES[key]);a.preload='none';a.addEventListener('error',()=>missing.add(key));tracks.set(key,a);}return tracks.get(key);}
  function play(a,key){if(missing.has(key))return;try{const pending=a.play();pending?.catch(()=>{});}catch{}}
  function stopEffects(){for(const a of active){a.pause();a.currentTime=0;}active.clear();}
- function syncMusic(){const key=scene==='battle'?'battle':'home';if(music&&music!==track(key))music.pause();music=track(key);music.loop=true;music.volume=scene==='result'?.15:.3;if(unlocked&&!hidden)play(music,key);else music.pause();}
+ function syncMusic(){const key=scene==='battle'?'battle':'home';if(!music){music=makeAudio('/assets/audio/'+FILES[key]);music.preload='auto';}const src='/assets/audio/'+FILES[key];if(!music.src.endsWith(src)){music.pause();music.src=src;music.load();}music.loop=true;music.volume=scene==='result'?.15:.3;if(unlocked&&!hidden)play(music,key);else music.pause();}
  function effect(key){if(!unlocked||hidden||missing.has(key)||active.size>=4)return;const now=clock();if(now-(last.get(key)??-Infinity)<(key==='hit'?120:key==='death'?250:1000))return;last.set(key,now);const a=track(key).cloneNode();a.volume=key==='hit'?.35:.65;a.addEventListener('ended',()=>active.delete(a),{once:true});a.addEventListener('error',()=>{missing.add(key);active.delete(a);},{once:true});active.add(a);try{a.play()?.catch(()=>active.delete(a));}catch{active.delete(a);}}
  return {
-  unlock(){unlocked=true;syncMusic();},
+  unlock(){unlocked=true;if(music?.error)music.load();syncMusic();},
   visibility(value){hidden=value;if(hidden)stopEffects();syncMusic();},
   scene(value){if(scene===value)return;scene=value;stopEffects();syncMusic();},
   begin(battle){previous=new Map([...battle.units,...battle.buildings].map(u=>[u.id,{hp:u.hp,hurtAt:u.hurtAt,building:!!(u.castle||u.tower)}]));last.clear();},
