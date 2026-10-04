@@ -1,26 +1,23 @@
-// Displayed territory is a strength projection of server-side PvP contribution,
-// rather than a claim that individual historical provinces have been captured.
+// Province ownership projects server PvP contribution; it is not an attack/capture history.
 export const TERRITORY_KEYS=['shu','wei','wu','qun'];
 const ANCHORS=[[.29,.60],[.66,.32],[.78,.65],[.31,.29]];
-export function territoryShares(factions,total=10000){
-  const scores=TERRITORY_KEYS.map(f=>Math.max(0,Number(factions[f]?.contribution)||0));
-  const sum=scores.reduce((a,b)=>a+b,0);
-  if(!sum)return Object.fromEntries(TERRITORY_KEYS.map(f=>[f,0]));
-  const raw=scores.map(s=>s/sum*total),counts=raw.map(Math.floor);
-  const order=raw.map((v,i)=>({i,remainder:v-counts[i]})).sort((a,b)=>b.remainder-a.remainder||a.i-b.i);
-  for(let n=total-counts.reduce((a,b)=>a+b,0),i=0;i<n;i++)counts[order[i].i]++;
-  return Object.fromEntries(TERRITORY_KEYS.map((f,i)=>[f,counts[i]]));
-}
-export function territoryPixels(alpha,width,height,shares){
-  const pixels=[];for(let i=0;i<alpha.length;i++)if(alpha[i]>=128)pixels.push(i);
-  const counts=territoryShares(Object.fromEntries(TERRITORY_KEYS.map(f=>[f,{contribution:shares[f]||0}])),pixels.length);
-  const owners=new Int8Array(alpha.length).fill(-1);
-  if(!TERRITORY_KEYS.some(f=>counts[f]>0))return {owners,counts};
-  // Grow each faction from its geographical anchor, reserving an exact pixel quota.
-  const edges=[];
-  for(let f=0;f<4;f++)if(counts[TERRITORY_KEYS[f]])for(const p of pixels){const x=p%width/width,y=Math.floor(p/width)/height;edges.push({p,f,d:(x-ANCHORS[f][0])**2+(y-ANCHORS[f][1])**2});}
-  edges.sort((a,b)=>a.d-b.d||a.f-b.f||a.p-b.p);
-  const remaining={...counts};
-  for(const {p,f} of edges)if(owners[p]===-1&&remaining[TERRITORY_KEYS[f]]>0){owners[p]=f;remaining[TERRITORY_KEYS[f]]--;}
-  return {owners,counts};
-}
+// Polygons follow the province outlines of the user's 4:3 map artwork.
+export const PROVINCES=[
+['liang','涼州',[[18,282],[39,244],[18,215],[48,184],[104,158],[172,152],[198,190],[259,207],[311,187],[355,194],[391,218],[433,240],[406,272],[420,296],[381,310],[373,330],[331,347],[299,344],[261,369],[219,368],[185,337],[159,347],[141,375],[106,378],[77,366],[88,339],[43,312]]],
+['bing','并州',[[340,177],[363,151],[383,122],[414,82],[451,91],[483,111],[512,105],[551,132],[538,165],[555,199],[578,226],[574,270],[552,286],[510,281],[485,258],[449,252],[428,237],[405,213],[381,199],[357,193]]],
+['you','幽州',[[546,128],[560,103],[596,93],[613,64],[640,61],[667,85],[708,74],[716,48],[706,17],[753,4],[789,19],[819,17],[843,45],[873,37],[928,73],[979,93],[974,132],[924,132],[908,103],[878,120],[868,158],[843,183],[822,174],[795,189],[763,186],[742,204],[708,181],[669,180],[631,159],[587,169],[555,155]]],
+['ji','冀州',[[539,160],[583,168],[634,159],[669,182],[710,182],[742,202],[765,187],[791,189],[779,215],[751,223],[730,242],[751,258],[733,274],[696,271],[667,283],[644,277],[618,283],[604,304],[596,287],[574,271],[577,228],[557,199]]],
+['qing','青州',[[746,204],[766,191],[795,193],[821,179],[844,188],[872,171],[891,182],[923,187],[948,201],[967,218],[960,245],[940,266],[921,274],[914,289],[888,303],[860,295],[833,283],[807,273],[782,278],[762,263],[744,276],[751,256],[730,243],[754,225]]],
+['sili','司隸',[[430,247],[456,254],[485,258],[508,280],[551,287],[575,274],[598,284],[614,308],[600,335],[569,352],[555,374],[528,389],[503,379],[476,384],[446,395],[430,407],[425,382],[404,370],[379,344],[376,322],[384,310],[420,297],[406,275]]],
+['yan','兗州',[[614,282],[643,277],[668,285],[696,272],[733,276],[744,298],[738,326],[752,345],[727,355],[703,344],[680,349],[651,337],[626,337],[601,328],[612,310]]],
+['yu','豫州',[[601,331],[626,340],[652,338],[680,350],[703,346],[729,357],[753,349],[773,370],[764,398],[735,407],[717,438],[693,436],[670,448],[650,445],[638,421],[612,415],[596,394],[569,390],[556,375],[574,352]]],
+['xu','徐州',[[744,276],[762,262],[782,274],[806,271],[826,283],[859,298],[888,302],[897,328],[912,345],[916,383],[892,407],[865,412],[839,403],[812,421],[788,410],[764,399],[775,371],[758,346],[741,325],[746,300]]],
+['yi','益州',[[106,382],[142,377],[160,350],[183,338],[214,370],[259,373],[300,346],[333,349],[375,331],[403,370],[424,384],[430,411],[457,416],[443,441],[417,458],[412,482],[435,509],[412,523],[382,514],[361,528],[335,527],[325,554],[342,574],[356,600],[363,628],[353,640],[329,624],[308,645],[279,638],[261,652],[220,635],[209,599],[186,584],[174,560],[150,551],[142,523],[98,546],[65,539],[57,513],[35,500],[14,482],[23,450],[59,431],[78,407],[97,404]]],
+['jing','荊州',[[456,414],[481,396],[505,383],[528,393],[555,378],[572,392],[597,397],[614,419],[638,422],[652,449],[669,449],[673,475],[703,492],[716,520],[703,547],[673,552],[644,561],[615,572],[585,556],[553,568],[523,568],[506,547],[473,541],[454,522],[432,510],[415,482],[421,460],[445,445]]],
+['yang','揚州',[[814,423],[839,407],[865,416],[888,410],[918,388],[944,409],[950,438],[934,466],[915,482],[882,489],[863,513],[832,527],[810,534],[793,552],[752,548],[727,533],[718,521],[704,492],[677,477],[673,452],[696,440],[718,442],[735,410],[765,402],[789,416]]],
+['jiao','交州',[[363,532],[383,521],[413,529],[435,516],[455,526],[472,547],[506,552],[523,574],[553,574],[585,563],[613,579],[644,568],[673,558],[691,577],[681,610],[674,638],[694,660],[681,691],[648,705],[620,727],[578,740],[550,746],[528,716],[500,714],[480,690],[451,694],[423,674],[395,717],[367,700],[361,676],[378,654],[358,634],[367,606],[352,581],[331,555],[339,535]]]
+].map(([id,name,points])=>({id,name,points:points.map(([x,y])=>[x/1000,y/750])}));
+export function territoryShares(factions,total=10000){const scores=TERRITORY_KEYS.map(f=>Math.max(0,Number(factions[f]?.contribution)||0)),sum=scores.reduce((a,b)=>a+b,0);if(!sum)return Object.fromEntries(TERRITORY_KEYS.map(f=>[f,0]));const raw=scores.map(s=>s/sum*total),counts=raw.map(Math.floor),order=raw.map((v,i)=>({i,remainder:v-counts[i]})).sort((a,b)=>b.remainder-a.remainder||a.i-b.i);for(let n=total-counts.reduce((a,b)=>a+b,0),i=0;i<n;i++)counts[order[i].i]++;return Object.fromEntries(TERRITORY_KEYS.map((f,i)=>[f,counts[i]]));}
+const area=p=>Math.abs(p.points.reduce((n,[x,y],i)=>{const [a,b]=p.points[(i+1)%p.points.length];return n+x*b-a*y;},0))/2;
+export function provinceOwnership(shares){const active=TERRITORY_KEYS.filter(f=>shares[f]>0),occupied=Object.fromEntries(TERRITORY_KEYS.map(f=>[f,0])),total=PROVINCES.reduce((n,p)=>n+area(p),0),target=Object.fromEntries(TERRITORY_KEYS.map(f=>[f,total*(shares[f]||0)/10000])),owners={};for(const p of [...PROVINCES].sort((a,b)=>area(b)-area(a))){if(!active.length){owners[p.id]=null;continue;}const size=area(p),x=p.points.reduce((n,c)=>n+c[0],0)/p.points.length,y=p.points.reduce((n,c)=>n+c[1],0)/p.points.length;const score=f=>{const i=TERRITORY_KEYS.indexOf(f);return (occupied[f]+size-target[f])**2-(occupied[f]-target[f])**2+size*.03*((x-ANCHORS[i][0])**2+(y-ANCHORS[i][1])**2);};const owner=active.slice().sort((a,b)=>score(a)-score(b))[0];owners[p.id]=owner;occupied[owner]+=size;}return {provinces:PROVINCES.map(p=>({id:p.id,owner:owners[p.id]})),territory:territoryShares(Object.fromEntries(TERRITORY_KEYS.map(f=>[f,{contribution:occupied[f]}])))};}
+export function provinceAt(x,y){return PROVINCES.find(p=>{let inside=false;for(let i=0,j=p.points.length-1;i<p.points.length;j=i++){const [a,b]=p.points[i],[c,d]=p.points[j];if((b>y)!==(d>y)&&x<(c-a)*(y-b)/(d-b)+a)inside=!inside;}return inside;});}

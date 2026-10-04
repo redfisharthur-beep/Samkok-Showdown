@@ -1,15 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {territoryShares,territoryPixels} from '../public/src/territory.js';
-test('unclaimed map stays empty; rounding always preserves full occupied area',()=>{
-  assert.deepEqual(territoryShares({}),{shu:0,wei:0,wu:0,qun:0});
-  for(let n=1;n<100;n++){const s=territoryShares({shu:{contribution:n},wei:{contribution:3},wu:{contribution:7},qun:{contribution:0}});assert.equal(Object.values(s).reduce((a,b)=>a+b),10000);assert.equal(s.qun,0);}
-});
-test('map territory matches quotas and leaves transparent pixels unoccupied',()=>{
-  const alpha=new Uint8Array(120).fill(255);alpha.fill(0,0,20);
-  const shares={shu:5000,wei:3000,wu:1500,qun:500},a=territoryPixels(alpha,12,10,shares),b=territoryPixels(alpha,12,10,shares);
-  assert.deepEqual(a.owners,b.owners);assert.deepEqual(a.counts,{shu:50,wei:30,wu:15,qun:5});
-  for(let f=0;f<4;f++)assert.equal([...a.owners].filter(o=>o===f).length,[50,30,15,5][f]);
-  assert.ok([...a.owners.slice(0,20)].every(o=>o===-1));
-  assert.ok([...territoryPixels(alpha,12,10,{shu:0,wei:0,wu:0,qun:0}).owners].every(o=>o===-1));
-});
+import {territoryShares,provinceOwnership,provinceAt,PROVINCES} from '../public/src/territory.js';
+test('contribution shares preserve full strength and empty provinces stay unclaimed',()=>{assert.deepEqual(territoryShares({}),{shu:0,wei:0,wu:0,qun:0});const empty=provinceOwnership(territoryShares({}));assert.ok(empty.provinces.every(p=>p.owner===null));assert.equal(Object.values(empty.territory).reduce((a,b)=>a+b),0);for(let n=1;n<100;n++)assert.equal(Object.values(territoryShares({shu:{contribution:n},wei:{contribution:3}})).reduce((a,b)=>a+b),10000);});
+test('whole provinces have one deterministic owner, zero-strength factions never occupy',()=>{const shares={shu:5000,wei:3000,wu:2000,qun:0},a=provinceOwnership(shares);assert.deepEqual(a,provinceOwnership(shares));assert.equal(a.provinces.length,13);assert.equal(new Set(a.provinces.map(p=>p.id)).size,13);assert.ok(a.provinces.every(p=>['shu','wei','wu'].includes(p.owner)));assert.equal(Object.values(a.territory).reduce((a,b)=>a+b),10000);assert.equal(a.territory.qun,0);assert.ok(provinceOwnership({shu:10000}).provinces.every(p=>p.owner==='shu'));});
+test('province hit testing follows artwork labels and excludes the sea',()=>{assert.equal(provinceAt(.31,.57)?.name,'益州');assert.equal(provinceAt(.73,.16)?.name,'幽州');assert.equal(provinceAt(.54,.43)?.name,'司隸');assert.equal(provinceAt(.97,.65),undefined);assert.ok(PROVINCES.every(p=>p.points.every(([x,y])=>x>=0&&x<=1&&y>=0&&y<=1)));});
