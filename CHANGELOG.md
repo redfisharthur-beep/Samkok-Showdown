@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 2026-10-04 · 0.2.17
+
+直接修改 public/index.html、public/style.css、public/src/app.js：載入 Google Fonts Noto Sans TC 400／500／700 字重，介面、表單與 Canvas 戰場文字統一使用 Noto Sans TC。
+
+確認：JavaScript 語法、差異檢查及 13 項引擎測試通過。網頁字體需網路載入，失敗時使用系統無襯線備援；實機字體載入仍待確認。圖片內既有文字不受 CSS 影響。
+
 ## 2026-10-04 · 0.2.16
 
 直接修改 public/src/app.js、public/src/engine.js：點擊主公移動後，在實際可達落點顯示一秒標記；拖曳兵種／武將顯示半透明原圖，法術顯示範圍，綠／紅判定共用 canPlay 與實際出牌規則。新增同隊單位小幅分離，每單位每秒最多偏移 8，路徑必須完全在可走地面；不推動主公，橋頭空間不足時保留重疊以確保可通行。
