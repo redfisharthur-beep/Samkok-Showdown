@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 2026-10-04 · 0.3.1
+
+直接修改 public/src/engine.js、public/src/app.js、public/style.css、src/worker.js 及 tests/engine.test.js：主公特技啟用時全螢幕顯示該陣營特技圖兩秒，期間暫停移動、攻擊、倒數、士氣與效果計時，禁止操作；結束後繼續。AI 與真人雙方共用引擎暫停狀態，真人由伺服器廣播圖像與剩餘暫停時間，不另算本機兩秒。圖片保持比例完整呈現。
+
+確認：語法、差異檢查及 19 項測試通過，新增兩秒暫停與恢復驗證。部署後雙帳號同步與實機視覺仍待確認。
+
 ## 2026-10-04 · 0.3.0
 
 修改 public/src/app.js、public/src/engine.js、public/style.css、wrangler.jsonc，新增原生後端 src/worker.js、tests/backend.test.js 與 DEPLOYMENT.md：接入 LINE Channel 2011852042、正式域名與安全回呼驗證；伺服器保存玩家陣營／牌組／轉國條件。新增真人房間，Durable Objects 模擬與保存戰鬥，客戶端以 200 ms 輪詢同步，身份與操作由後端驗證。保存真人戰績、牌組、操作時間線，四國分布僅來自雲端帳號與真人比賽。加入同頁籤刷新恢復，AI 紀錄保留本機。最新四張絕招圖已在倉庫並沿用。
