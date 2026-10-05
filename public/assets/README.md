@@ -52,14 +52,14 @@
 
 ## 主公戰場圖
 
-所有圖放在 `public/assets/lords/`。玩家戰場使用 b- 前綴；敵方戰場與首頁／陣營選擇共用原本圖檔。
+所有圖放在 `public/assets/lords/`。戰鬥我方使用 b- 前綴，敵方使用 r- 前綴；首頁、換國、配對等其他介面使用無前綴圖檔。真人對戰按本地敵我視角選圖，非依房主／客方固定。
 
 | 主公 | 首頁／陣營選擇 | 玩家戰場圖 | 敵方戰場圖 |
 |---|---|---|---|
-| 劉備 | shu.webp | b-shu.webp | shu.webp |
-| 曹操 | wei.webp | b-wei.webp | wei.webp |
-| 孫權 | wu.webp | b-wu.webp | wu.webp |
-| 董卓 | qun.webp | b-qun.webp | qun.webp |
+| 劉備 | shu.webp | b-shu.webp | r-shu.webp |
+| 曹操 | wei.webp | b-wei.webp | r-wei.webp |
+| 孫權 | wu.webp | b-wu.webp | r-wu.webp |
+| 董卓 | qun.webp | b-qun.webp | r-qun.webp |
 
 缺少對應圖檔時維持名稱佔位。
 

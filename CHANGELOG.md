@@ -1,3 +1,10 @@
+## 2026-10-05 — 主公圖分離首頁／換國與戰鬥敵我
+
+- 直接修改 `public/src/app.js` 的預載與戰場繪圖，四陣營均使用我方 `b-{faction}.webp`、敵方 `r-{faction}.webp`；其他介面維持 `{faction}.webp`。同步更新 `public/assets/README.md` 檔名表。
+- 所有路徑位於 `public/assets/lords/`，真人客方依翻轉後本地敵我視角取圖。
+- 驗證：76／76 既有測試通過，app.js 語法檢查通過，預載與繪圖路徑逐一核對。
+- 待完成：目前倉庫已有四張 b- 圖、四張無前綴圖與 r-wu.webp；尚缺 r-shu.webp、r-wei.webp、r-qun.webp，需要使用者提供。未生成替代圖。正式 Cloudflare 部署與實機顯示未驗證。
+
 ## 2026-10-05 — 邊緣部署容錯、主公途中接戰與軍醫前進
 
 - 直接修改原始 `public/src/engine.js`、`public/src/app.js`、`src/worker.js` 與 README，未追加覆寫或補丁腳本。
