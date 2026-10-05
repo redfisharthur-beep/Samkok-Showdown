@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CARDS,defaultDeck,trialDeck,validateDeck,FACTIONS} from '../public/src/data.js';
-import {Battle,trialDifficulty,walkable,findPath,advanceGround,TERRAIN,directPath,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP,visionRange} from '../public/src/engine.js';
+import {Battle,trialDifficulty,walkable,findPath,advanceGround,TERRAIN,directPath,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP,visionRange,selectTarget} from '../public/src/engine.js';
 test('32 cards and all legal faction decks',()=>{assert.equal(CARDS.length,32);for(const f of Object.keys(FACTIONS))assert.ok(validateDeck(f,defaultDeck(f)));assert.equal(validateDeck('shu',defaultDeck('wei')),false);assert.equal(validateDeck('shu',['spear','shield','archer','cavalry','fireball','arrows','lightning','fire']),false);});
 test('placement validates before spending; legal play rotates hand',()=>{const b=new Battle('shu',defaultDeck('shu'));assert.equal(b.play(0,0,NaN,200),false);assert.equal(b.sides[0].morale,5);assert.equal(b.play(0,0,150,700),true);assert.equal(b.sides[0].morale,0);assert.equal(b.sides[0].queue.at(-1),'guanyu');assert.equal(b.play(0,0,150,700),false);});
 test('ultimates one use, dead lords cannot activate',()=>{for(const f of Object.keys(FACTIONS)){const b=new Battle(f,defaultDeck(f));b.sides[0].charge=100;assert.equal(b.ultimate(0),true);assert.equal(b.ultimate(0),false);}const b=new Battle('shu',defaultDeck('shu'));b.sides[0].charge=100;b.damage(b.sides[0].lord,100000,1);assert.equal(b.ultimate(0),false);const charge=b.sides[0].charge;b.gain(0,5);assert.equal(b.sides[0].charge,charge);});
@@ -25,7 +25,7 @@ test('AI retreats a wounded lord and avoids spells against isolated enemies',()=
 
 test('AI cycles a stalled spell-only hand and advances a supported healthy lord',()=>{const b=new Battle('shu',defaultDeck('shu'));const p=b.sides[1];p.morale=10;p.queue=['fireball','arrows','lightning','fire','spear','shield','cavalry','medic'];b.elapsed=7;b.ai();assert.ok(p.morale<10);assert.equal(p.lastAiPlay,7);assert.ok(p.queue.slice(0,4).includes('spear'));const c=new Battle('shu',defaultDeck('shu'));c.spawn({...CARDS.find(x=>x.id==='spear'),count:3},1,149,350);c.ai();assert.ok(c.sides[1].lord.destination.x<300);assert.ok(c.sides[1].lord.destination.y>=300);});
 
-test('ultimate pauses combat and input for two seconds then resumes',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.sides[0].charge=100;assert.equal(b.ultimate(0),true);const time=b.time,elapsed=b.elapsed,morale=b.sides[0].morale,positions=b.units.map(u=>[u.x,u.y]),hp=b.units.map(u=>u.hp);assert.equal(b.cinematic.faction,'shu');assert.equal(b.play(0,0,150,700),false);b.moveLord(0,150,700);assert.equal(b.sides[0].lord.destination,undefined);for(let i=0;i<20;i++)b.update(.1);assert.equal(b.time,time);assert.equal(b.elapsed,elapsed);assert.equal(b.sides[0].morale,morale);assert.deepEqual(b.units.map(u=>[u.x,u.y]),positions);assert.deepEqual(b.units.map(u=>u.hp),hp);assert.equal(b.pauseRemaining,0);b.update(.1);assert.ok(b.time<time);assert.ok(b.elapsed>elapsed);});
+test('ultimate pauses combat and input for 0.7 seconds then resumes',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.sides[0].charge=100;assert.equal(b.ultimate(0),true);const time=b.time,elapsed=b.elapsed,morale=b.sides[0].morale,positions=b.units.map(u=>[u.x,u.y]),hp=b.units.map(u=>u.hp);assert.equal(b.cinematic.faction,'shu');assert.equal(b.play(0,0,150,700),false);b.moveLord(0,150,700);assert.equal(b.sides[0].lord.destination,undefined);for(let i=0;i<7;i++)b.update(.1);assert.equal(b.time,time);assert.equal(b.elapsed,elapsed);assert.equal(b.sides[0].morale,morale);assert.deepEqual(b.units.map(u=>[u.x,u.y]),positions);assert.deepEqual(b.units.map(u=>u.hp),hp);assert.equal(b.pauseRemaining,0);b.update(.1);assert.ok(b.time<time);assert.ok(b.elapsed>elapsed);});
 
 test('trial difficulty rises with recent win rate, eases after losses and limits small samples',()=>{const results=(wins,total)=>Array.from({length:total},(_,i)=>({winner:i<wins?0:1}));assert.equal(trialDifficulty([]),0);assert.equal(trialDifficulty(results(0,20)),0);assert.equal(trialDifficulty(results(8,20)),0);assert.ok(trialDifficulty(results(12,20))>trialDifficulty(results(9,20)));assert.equal(trialDifficulty(results(20,20)),1);assert.equal(trialDifficulty(results(1,1)),.2);assert.equal(trialDifficulty([...results(20,20),...results(0,20)]),0);assert.equal(trialDifficulty([{winner:-1},{winner:99}]),0);});
 test('trial difficulty improves tactics and decision cadence without changing unit strength or speed',()=>{const easy=new Battle('shu',defaultDeck('shu'),'wei',()=>.99,0),hard=new Battle('shu',defaultDeck('shu'),'wei',()=>.99,1);assert.deepEqual(easy.units,hard.units);assert.deepEqual(easy.buildings,hard.buildings);assert.ok(easy.aiTimer>hard.aiTimer);for(const b of [easy,hard]){b.spawn({...CARDS.find(c=>c.id==='spear'),count:3},1,149,350);b.ai();}assert.equal(easy.sides[1].lord.destination.x,300);assert.ok(hard.sides[1].lord.destination.x<300);assert.ok(hard.sides[1].lord.destination.y>easy.sides[1].lord.destination.y);});
@@ -33,7 +33,7 @@ test('trial difficulty improves tactics and decision cadence without changing un
 test('adaptive beginner and middle trials finish with finite, walkable units',()=>{for(const difficulty of [0,.5]){let seed=41;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296),b=new Battle('shu',defaultDeck('shu'),'wu',random,difficulty);for(let i=0;i<2210&&!b.result;i++){if(i%15===0){for(let index=0;index<4;index++)if(b.play(0,index,149,650))break;b.ultimate(0);}b.update(.1);assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&walkable(u)));}assert.ok(b.result);}});
 
 test('idle lords hold position without enemies and never attack buildings',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;const u=b.sides[0].lord;assert.equal(u.y,651);u.x=149;u.y=550;b.units=[u];const towers=b.buildings.filter(t=>t.side===1);const hp=towers.map(t=>t.hp);for(let i=0;i<180;i++)b.update(.1);assert.deepEqual({x:u.x,y:u.y},{x:149,y:550});assert.deepEqual(towers.map(t=>t.hp),hp);b.moveLord(0,149,212);for(let i=0;i<200;i++)b.update(.1);assert.deepEqual(towers.map(t=>t.hp),hp);});
-test('lord follows manual order, attacks nearby units and then holds position',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;const u=b.sides[0].lord;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,300,640);const enemy=b.units.at(-1);enemy.speed=0;enemy.atk=0;const hp=enemy.hp;b.update(.1);assert.ok(enemy.hp<hp);assert.equal(u.y,651);b.moveLord(0,149,600);const order={...u.destination};u.cool=0;b.update(.1);assert.ok(enemy.hp<hp);assert.deepEqual(u.destination,order);enemy.hp=0;for(let i=0;i<45;i++)b.update(.1);assert.ok(u.x<200);assert.ok(walkable(u));const stopped={x:u.x,y:u.y};for(let i=0;i<60;i++)b.update(.1);assert.deepEqual({x:u.x,y:u.y},stopped);assert.ok(Math.hypot(u.x-149,u.y-600)<5);});
+test('lord follows manual order, attacks nearby units and then holds position',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;const u=b.sides[0].lord;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,300,640);const enemy=b.units.at(-1);enemy.speed=0;enemy.atk=0;const hp=enemy.hp;for(let i=0;i<3;i++)b.update(.1);assert.ok(enemy.hp<hp);assert.equal(u.y,651);b.moveLord(0,149,600);const order={...u.destination};u.cool=0;for(let i=0;i<3;i++)b.update(.1);assert.ok(enemy.hp<hp);assert.deepEqual(u.destination,order);enemy.hp=0;for(let i=0;i<45;i++)b.update(.1);assert.ok(u.x<200);assert.ok(walkable(u));const stopped={x:u.x,y:u.y};for(let i=0;i<60;i++)b.update(.1);assert.deepEqual({x:u.x,y:u.y},stopped);assert.ok(Math.hypot(u.x-149,u.y-600)<5);});
 
 test('mirrored deployment, bases and paths use symmetrical playable bounds',()=>{const b=new Battle('shu',defaultDeck('shu'),'shu');for(let y=100;y<=762;y+=7)for(const x of [50,149,300,454,550])assert.equal(b.canPlay(0,0,x,y),b.canPlay(1,0,x,862-y),`${x},${y}`);for(const a of b.buildings.filter(b=>b.side===0)){const other=b.buildings.find(b=>b.side===1&&b.castle===a.castle&&b.tower===a.tower&&b.x===a.x);assert.ok(other);assert.equal(a.y+other.y,862);}assert.equal(TERRAIN.minY+TERRAIN.maxY,862);assert.equal(TERRAIN.riverTop+TERRAIN.riverBottom,862);});
 test('difficulty adjusts at most one tenth per completed trial and decks remain legal',()=>{for(const f of Object.keys(FACTIONS))for(const style of ['rush','defense','siege'])assert.ok(validateDeck(f,trialDeck(f,style)));assert.equal(smoothTrialDifficulty(Array.from({length:20},()=>({winner:0})),0),.1);assert.ok(Math.abs(smoothTrialDifficulty(Array.from({length:20},()=>({winner:1})),.8)-.7)<1e-9);});
@@ -42,7 +42,7 @@ test('charge needs sustained movement, consumes one bonus and keeps movement spe
 
 test('malformed decks and inherited faction names are rejected',()=>{for(const deck of [undefined,null,'12345678',{},['spear']])assert.equal(validateDeck('shu',deck),false);for(const f of ['__proto__','constructor','bad'])assert.equal(validateDeck(f,defaultDeck('shu')),false);});
 test('lords stay on their own bank under manual orders, fear and knockback on both sides',()=>{for(const f of Object.keys(FACTIONS)){const b=new Battle(f,defaultDeck(f));b.aiTimer=1000;b.buildings=[];for(const side of [0,1]){const u=b.sides[side].lord;assert.equal(b.moveLord(side,149,side?700:150),true);assert.equal(u.destination.y,side?372:490);for(let i=0;i<100;i++)b.update(.1);assert.ok(side?u.y<=372:u.y>=490);advanceGround(u,{x:149,y:side?700:150},1000);assert.ok(side?u.y<=372:u.y>=490);u.fearUntil=b.elapsed+1;b.update(.1);assert.ok(side?u.y<=372:u.y>=490);assert.ok(walkable(u));}}});
-test('lords chase invaders, fight during manual orders and resume movement when clear',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.buildings=[];const u=b.sides[0].lord;b.units=[u];b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,400,550);const near=b.units.at(-1);b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,100,500);const far=b.units.at(-1);for(const t of [near,far]){t.speed=0;t.atk=0;}b.update(.1);assert.ok(u.x>300);assert.ok(u.y<651);near.x=u.x+20;near.y=u.y;const hp=near.hp;u.cool=0;b.update(.1);assert.ok(near.hp<hp);assert.equal(far.hp,far.maxHp);const retreatHp=near.hp;assert.equal(b.moveLord(0,100,700),true);u.cool=0;const startX=u.x;b.update(.1);assert.equal(u.x,startX);assert.ok(near.hp<retreatHp);assert.ok(u.destination);b.units=[u];for(let i=0;i<180;i++)b.update(.1);assert.ok(Math.hypot(u.x-100,u.y-700)<5);});
+test('lords chase invaders, fight during manual orders and resume movement when clear',()=>{const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.buildings=[];const u=b.sides[0].lord;b.units=[u];b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,400,550);const near=b.units.at(-1);b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},1,100,500);const far=b.units.at(-1);for(const t of [near,far]){t.speed=0;t.atk=0;}b.update(.1);assert.ok(u.x>300);assert.ok(u.y<651);near.x=u.x+20;near.y=u.y;const hp=near.hp;u.cool=0;for(let i=0;i<3;i++)b.update(.1);assert.ok(near.hp<hp);assert.equal(far.hp,far.maxHp);const retreatHp=near.hp;assert.equal(b.moveLord(0,100,700),true);u.cool=0;const startX=u.x;for(let i=0;i<3;i++)b.update(.1);assert.equal(u.x,startX);assert.ok(near.hp<retreatHp);assert.ok(u.destination);b.units=[u];for(let i=0;i<180;i++)b.update(.1);assert.ok(Math.hypot(u.x-100,u.y-700)<5);});
 
 test('medics prioritize absolute remaining HP and cap healing at maximum HP',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.units=[];b.buildings=[];const y=side?300:600;for(const x of [100,150])b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},side,x,y);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,125,y+(side?-55:55));const [low,ratio,medic]=b.units;low.hp=200;low.maxHp=250;ratio.hp=300;ratio.maxHp=2000;low.speed=ratio.speed=0;medic.cool=0;b.update(.1);assert.equal(low.hp,250);assert.equal(ratio.hp,300);b.update(.1);assert.equal(ratio.hp,300);medic.cool=0;b.update(.1);assert.equal(ratio.hp,365);}});
 test('uninjured formations and lone medics advance on both sides using bridges',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.aiTimer=1000;b.units=[];b.buildings=[];b.spawn({...CARDS.find(c=>c.id==='shield'),count:1},side,149,side?350:512);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,149,side?150:712);const ally=b.units[0],medic=b.units[1];ally.speed=0;const start=medic.y;for(let i=0;i<40;i++)b.update(.1);assert.ok(side?medic.y>start:medic.y<start);b.units=[medic];medic.x=300;medic.y=side?300:562;for(let i=0;i<200;i++){b.update(.1);assert.ok(walkable(medic));}assert.ok(side?medic.y>TERRAIN.riverBottom:medic.y<TERRAIN.riverTop);}});
@@ -52,7 +52,7 @@ test('lords attack an enemy encountered during a manual route, retain the destin
 test('lords only seek units inside their own territory even when an opposing-bank enemy is in range',()=>{for(const side of [0,1]){const b=new Battle('wei',defaultDeck('wei'),'wei');b.ai=()=>{};b.buildings=[];const u=b.sides[side].lord;b.units=[u];u.x=149;u.y=side?372:490;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},1-side,149,side?490:372);const enemy=b.units.at(-1),hp=enemy.hp;u.cool=0;b.update(.1);assert.equal(enemy.hp,hp);assert.equal(b.effects.some(e=>e.id==='projectile'&&e.side===side),false);}});
 test('healthy allies do not hold medics back; medics heal on the route then resume toward the enemy castle',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};b.buildings=[];b.units=[];const y=side?300:562;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0},side,149,y);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,149,y);const [ally,medic]=b.units;medic.cool=0;ally.hp=ally.maxHp-10;const start=medic.y;b.update(.1);assert.equal(ally.hp,ally.maxHp);assert.equal(medic.y,start);for(let i=0;i<500;i++)b.update(.1);assert.ok(Math.hypot(medic.x-300,medic.y-(side?723:139))<9);assert.ok(walkable(medic));}});
 
-test('lords stop where combat ends on both sides',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'),'shu');b.ai=()=>{};b.buildings=[];const u=b.sides[side].lord;b.units=[u];u.x=100;u.y=side?200:650;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},1-side,300,u.y);const enemy=b.units.at(-1);b.update(.1);assert.ok(u.x>100);enemy.x=u.x+20;u.cool=0;b.update(.1);assert.ok(enemy.hp<enemy.maxHp);enemy.hp=0;const position={x:u.x,y:u.y};for(let i=0;i<50;i++)b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);}});
+test('lords stop where combat ends on both sides',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'),'shu');b.ai=()=>{};b.buildings=[];const u=b.sides[side].lord;b.units=[u];u.x=100;u.y=side?200:650;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},1-side,300,u.y);const enemy=b.units.at(-1);b.update(.1);assert.ok(u.x>100);enemy.x=u.x+20;u.cool=0;for(let i=0;i<3;i++)b.update(.1);assert.ok(enemy.hp<enemy.maxHp);enemy.hp=0;const position={x:u.x,y:u.y};for(let i=0;i<50;i++)b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);}});
 
 test('every finite troop release snaps to the closest own-land rectangle on both sides',()=>{for(const side of [0,1])for(const [x,y] of [[-999,-999],[999,999],[300,431],[300,side?700:200],[149,430]]){const b=new Battle('shu',defaultDeck('shu'),'shu');b.sides[side].morale=10;const c=b.hand(side)[0],point=placementPoint(x,y,side,c);assert.ok(walkable(point));assert.ok(side?point.y<=372:point.y>=490);assert.equal(b.play(side,0,x,y),true);const unit=b.units.at(-1);assert.equal(unit.x,point.x);assert.equal(unit.y,point.y);assert.equal(b.sides[side].morale,10-c.cost);}for(const id of ['ambush','barricade']){const p=placementPoint(160,431,0,CARDS.find(c=>c.id===id));assert.ok(walkable(p));assert.equal(p.x,160);}});
 
@@ -73,14 +73,14 @@ function sightBattle(kind,side){
  return {b,u,enemy};
 }
 
-test('sight locks the first discovery, not a later closer enemy, on both sides',()=>{
+test('sight acquires the nearest enemy and keeps a combat lock on both sides',()=>{
  for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
-  const {b,u,enemy}=sightBattle(kind,side),first=enemy(240),closer=enemy(140);
-  b.update(.1);assert.equal(u.targetId,first.id);
-  first.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,first.id);
-  first.x+=1;b.update(.1);assert.equal(u.targetId,closer.id);
-  first.x=120;b.update(.1);assert.equal(u.targetId,closer.id);
-  closer.hp=0;b.update(.1);assert.equal(u.targetId,first.id);
+  const {b,u,enemy}=sightBattle(kind,side),far=enemy(240),near=enemy(140);
+  b.update(.1);assert.equal(u.targetId,near.id);
+  far.x=110;for(let i=0;i<12;i++)b.update(.1);assert.equal(u.targetId,near.id);
+  near.x=100+visionRange(u)+1;b.update(.1);assert.equal(u.targetId,far.id);
+  near.x=105;b.update(.1);assert.equal(u.targetId,far.id);
+  far.hp=0;b.update(.1);assert.equal(u.targetId,near.id);
  }
 });
 
@@ -93,13 +93,13 @@ test('enemies outside sight are never locked; entry is detected immediately',()=
  }
 });
 
-test('melee troops pursue a visible target beyond attack range without switching',()=>{
+test('a long pursuit redirects only after the lock delay to a much closer threat',()=>{
  for(const side of [0,1]){
-  const {b,u,enemy}=sightBattle('spear',side),first=enemy(280);u.speed=34;u.atk=40;u.cool=0;
-  b.update(.1);assert.ok(u.x>100);assert.equal(first.hp,first.maxHp);assert.equal(u.targetId,first.id);
-  const closer=enemy(u.x+20);b.update(.1);assert.equal(u.targetId,first.id);assert.equal(closer.hp,closer.maxHp);
-  let hit=false;for(let i=0;i<100;i++){b.update(.1);if(first.hp<first.maxHp){hit=true;break;}}
-  assert.equal(hit,true);assert.equal(u.targetId,first.id);
+  const {b,u,enemy}=sightBattle('spear',side),far=enemy(280);u.speed=34;u.atk=40;u.cool=0;
+  b.update(.1);assert.ok(u.x>100);assert.equal(far.hp,far.maxHp);assert.equal(u.targetId,far.id);
+  const closer=enemy(u.x+20);b.update(.1);assert.equal(u.targetId,far.id);
+  for(let i=0;i<12;i++)b.update(.1);assert.equal(u.targetId,closer.id);assert.ok(closer.hp<closer.maxHp);
+  const newcomer=enemy(u.x+5);for(let i=0;i<15;i++)b.update(.1);assert.equal(u.targetId,closer.id);assert.equal(newcomer.hp,newcomer.maxHp);
  }
 });
 
@@ -133,4 +133,22 @@ test('wounded allies stop a medic as soon as they enter healing range; overlap s
   ally.x=u.x;ally.y=u.y;b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);
   ally.hp=0;b.update(.1);assert.ok(side?u.y>position.y:u.y<position.y);
  }
+});
+test('ordinary troops yield building locks to troops; siege keeps its building role',()=>{
+ for(const side of [0,1])for(const kind of ['spear','archer','ram']){
+  const {b,u}=sightBattle(kind,side);const base={id:++b.id,side:1-side,x:150,y:u.y,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(base);b.update(.1);assert.equal(u.targetId,base.id);
+  const enemy={id:++b.id,side:1-side,x:180,y:u.y,hp:1000,maxHp:1000,atk:0,speed:0,range:0,cool:100};b.units.push(enemy);b.update(.1);assert.equal(u.targetId,kind==='ram'?base.id:enemy.id);
+ }
+});
+test('melee anticipation deals one hit at impact, can miss, and does not narrow splash',()=>{
+ for(const miss of [false,true]){
+  const {b,u,enemy}=sightBattle('spear',0);u.atk=40;u.cool=0;const target=enemy(140),hp=target.hp;
+  b.update(.1);assert.equal(target.hp,hp);assert.ok(u.windupUntil>b.elapsed);u.cool=10;
+  if(miss)target.x=240;b.update(.1);assert.equal(target.hp,hp);b.update(.1);
+  assert.equal(target.hp,miss?hp:hp-40);for(let i=0;i<8;i++)b.update(.1);assert.equal(target.hp,miss?hp:hp-40);
+ }
+ const {b,u,enemy}=sightBattle('spear',0);u.atk=40;u.ability='斬擊';u.cool=0;const target=enemy(140),splash=enemy(195);for(let i=0;i<3;i++)b.update(.1);assert.equal(target.hp,9960);assert.equal(splash.hp,9960);
+});
+test('Wu bonuses and card stats use the reduced values without changing printed card costs',()=>{
+ assert.equal(FACTIONS.wu.hp,1800);assert.equal(FACTIONS.wu.range,110);const b=new Battle('wu',defaultDeck('wu'));b.sides[0].charge=100;b.ultimate(0);assert.equal(b.sides[0].morale,6);assert.equal(CARDS.find(c=>c.id==='sunshangxiang').range,175);assert.equal(CARDS.find(c=>c.id==='sunshangxiang').cost,3);
 });

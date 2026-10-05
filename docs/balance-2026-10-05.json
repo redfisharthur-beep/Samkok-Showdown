@@ -1,0 +1,921 @@
+{
+  "commit": null,
+  "seed": 20261005,
+  "games": 1000,
+  "mirrorPairs": 500,
+  "crossFactionGames": 600,
+  "sameFactionGames": 400,
+  "sourceHashes": {
+    "engine": "1b79ec4b94f1e85dcd48023dcdf048acd85966656178552ca4d69b5f2e38f895",
+    "data": "f3e942d25f4662c7c068a74e4d533678f4aa4bd50ce02b955a12520e2d13da5d",
+    "equipment": "14c9a800ba7f34023e5e6014fff964dcbc122a84ea7c29f6ce07ee99219e8385"
+  },
+  "method": {
+    "timestep": 0.1,
+    "decisionInterval": 0.6,
+    "equipment": "none for both",
+    "controller": "same tactical controller on both sides; built-in trial AI disabled by aiTimer=Infinity; combat methods unmodified",
+    "exploration": 0.15,
+    "economy": "save for a selected unaffordable card until it is affordable; interrupt for immediate base danger",
+    "deckStyles": {
+      "rush": "快攻",
+      "defense": "防守恢復",
+      "siege": "攻城",
+      "spell": "法術控制",
+      "balanced": "混合"
+    },
+    "deckDesigns": 200,
+    "sameFactionControl": "identical decks with independent player RNG streams, swapped in mirror",
+    "limits": "AI policy and selected deck distribution are not human meta or causal individual-card strength estimates."
+  },
+  "factionStats": {
+    "shu": {
+      "appearances": 500,
+      "wins": 209,
+      "losses": 291,
+      "draws": 0
+    },
+    "wei": {
+      "appearances": 500,
+      "wins": 253,
+      "losses": 243,
+      "draws": 4
+    },
+    "wu": {
+      "appearances": 500,
+      "wins": 272,
+      "losses": 228,
+      "draws": 0
+    },
+    "qun": {
+      "appearances": 500,
+      "wins": 262,
+      "losses": 234,
+      "draws": 4
+    }
+  },
+  "crossStats": {
+    "shu": {
+      "appearances": 300,
+      "wins": 109,
+      "losses": 191,
+      "draws": 0,
+      "pairedBootstrap95": [
+        0.2947019867549669,
+        0.43884892086330934
+      ]
+    },
+    "wei": {
+      "appearances": 300,
+      "wins": 155,
+      "losses": 145,
+      "draws": 0,
+      "pairedBootstrap95": [
+        0.43700787401574803,
+        0.5985401459854015
+      ]
+    },
+    "wu": {
+      "appearances": 300,
+      "wins": 172,
+      "losses": 128,
+      "draws": 0,
+      "pairedBootstrap95": [
+        0.49609375,
+        0.6510067114093959
+      ]
+    },
+    "qun": {
+      "appearances": 300,
+      "wins": 164,
+      "losses": 136,
+      "draws": 0,
+      "pairedBootstrap95": [
+        0.463768115942029,
+        0.6258064516129033
+      ]
+    }
+  },
+  "styleStats": {
+    "rush": {
+      "appearances": 400,
+      "wins": 141,
+      "losses": 259,
+      "draws": 0
+    },
+    "defense": {
+      "appearances": 400,
+      "wins": 205,
+      "losses": 191,
+      "draws": 4
+    },
+    "siege": {
+      "appearances": 400,
+      "wins": 244,
+      "losses": 156,
+      "draws": 0
+    },
+    "spell": {
+      "appearances": 400,
+      "wins": 206,
+      "losses": 194,
+      "draws": 0
+    },
+    "balanced": {
+      "appearances": 400,
+      "wins": 200,
+      "losses": 196,
+      "draws": 4
+    }
+  },
+  "sideStats": [
+    {
+      "appearances": 1000,
+      "wins": 498,
+      "losses": 498,
+      "draws": 4
+    },
+    {
+      "appearances": 1000,
+      "wins": 498,
+      "losses": 498,
+      "draws": 4
+    }
+  ],
+  "sideBootstrap95": [
+    0.495,
+    0.505
+  ],
+  "matchups": {
+    "shu>shu": {
+      "appearances": 200,
+      "wins": 100,
+      "losses": 100,
+      "draws": 0
+    },
+    "shu>wei": {
+      "appearances": 100,
+      "wins": 40,
+      "losses": 60,
+      "draws": 0
+    },
+    "wei>shu": {
+      "appearances": 100,
+      "wins": 60,
+      "losses": 40,
+      "draws": 0
+    },
+    "shu>wu": {
+      "appearances": 100,
+      "wins": 35,
+      "losses": 65,
+      "draws": 0
+    },
+    "wu>shu": {
+      "appearances": 100,
+      "wins": 65,
+      "losses": 35,
+      "draws": 0
+    },
+    "shu>qun": {
+      "appearances": 100,
+      "wins": 34,
+      "losses": 66,
+      "draws": 0
+    },
+    "qun>shu": {
+      "appearances": 100,
+      "wins": 66,
+      "losses": 34,
+      "draws": 0
+    },
+    "wei>wei": {
+      "appearances": 200,
+      "wins": 98,
+      "losses": 98,
+      "draws": 4
+    },
+    "wei>wu": {
+      "appearances": 100,
+      "wins": 45,
+      "losses": 55,
+      "draws": 0
+    },
+    "wu>wei": {
+      "appearances": 100,
+      "wins": 55,
+      "losses": 45,
+      "draws": 0
+    },
+    "wei>qun": {
+      "appearances": 100,
+      "wins": 50,
+      "losses": 50,
+      "draws": 0
+    },
+    "qun>wei": {
+      "appearances": 100,
+      "wins": 50,
+      "losses": 50,
+      "draws": 0
+    },
+    "wu>wu": {
+      "appearances": 200,
+      "wins": 100,
+      "losses": 100,
+      "draws": 0
+    },
+    "wu>qun": {
+      "appearances": 100,
+      "wins": 52,
+      "losses": 48,
+      "draws": 0
+    },
+    "qun>wu": {
+      "appearances": 100,
+      "wins": 48,
+      "losses": 52,
+      "draws": 0
+    },
+    "qun>qun": {
+      "appearances": 200,
+      "wins": 98,
+      "losses": 98,
+      "draws": 4
+    }
+  },
+  "mirror": {
+    "sameAbstractWinner": 492,
+    "side0Sweeps": 3,
+    "side1Sweeps": 3,
+    "drawBoth": 2,
+    "mixedDraw": 0
+  },
+  "cardStats": {
+    "guanyu": {
+      "id": "guanyu",
+      "name": "關羽",
+      "faction": "shu",
+      "type": "general",
+      "cost": 5,
+      "appearances": 320,
+      "wins": 141,
+      "losses": 179,
+      "draws": 0,
+      "plays": 527,
+      "playedAppearances": 253,
+      "opportunities": 1077,
+      "mana": 2635
+    },
+    "zhangfei": {
+      "id": "zhangfei",
+      "name": "張飛",
+      "faction": "shu",
+      "type": "general",
+      "cost": 4,
+      "appearances": 330,
+      "wins": 137,
+      "losses": 193,
+      "draws": 0,
+      "plays": 1054,
+      "playedAppearances": 328,
+      "opportunities": 3585,
+      "mana": 4216
+    },
+    "zhaoyun": {
+      "id": "zhaoyun",
+      "name": "趙雲",
+      "faction": "shu",
+      "type": "general",
+      "cost": 3,
+      "appearances": 310,
+      "wins": 130,
+      "losses": 180,
+      "draws": 0,
+      "plays": 1115,
+      "playedAppearances": 308,
+      "opportunities": 9606,
+      "mana": 3345
+    },
+    "zhugeliang": {
+      "id": "zhugeliang",
+      "name": "諸葛亮",
+      "faction": "shu",
+      "type": "general",
+      "cost": 5,
+      "appearances": 340,
+      "wins": 136,
+      "losses": 204,
+      "draws": 0,
+      "plays": 492,
+      "playedAppearances": 261,
+      "opportunities": 1076,
+      "mana": 2460
+    },
+    "dianwei": {
+      "id": "dianwei",
+      "name": "典韋",
+      "faction": "wei",
+      "type": "general",
+      "cost": 5,
+      "appearances": 320,
+      "wins": 159,
+      "losses": 157,
+      "draws": 4,
+      "plays": 831,
+      "playedAppearances": 311,
+      "opportunities": 1273,
+      "mana": 4155
+    },
+    "zhangliao": {
+      "id": "zhangliao",
+      "name": "張遼",
+      "faction": "wei",
+      "type": "general",
+      "cost": 3,
+      "appearances": 330,
+      "wins": 162,
+      "losses": 168,
+      "draws": 0,
+      "plays": 1001,
+      "playedAppearances": 322,
+      "opportunities": 12972,
+      "mana": 3003
+    },
+    "xiahou": {
+      "id": "xiahou",
+      "name": "夏侯惇",
+      "faction": "wei",
+      "type": "general",
+      "cost": 4,
+      "appearances": 310,
+      "wins": 153,
+      "losses": 153,
+      "draws": 4,
+      "plays": 1034,
+      "playedAppearances": 308,
+      "opportunities": 3450,
+      "mana": 4136
+    },
+    "simayi": {
+      "id": "simayi",
+      "name": "司馬懿",
+      "faction": "wei",
+      "type": "general",
+      "cost": 5,
+      "appearances": 340,
+      "wins": 174,
+      "losses": 162,
+      "draws": 4,
+      "plays": 600,
+      "playedAppearances": 310,
+      "opportunities": 1502,
+      "mana": 3000
+    },
+    "zhouyu": {
+      "id": "zhouyu",
+      "name": "周瑜",
+      "faction": "wu",
+      "type": "general",
+      "cost": 5,
+      "appearances": 340,
+      "wins": 184,
+      "losses": 156,
+      "draws": 0,
+      "plays": 456,
+      "playedAppearances": 251,
+      "opportunities": 799,
+      "mana": 2280
+    },
+    "ganning": {
+      "id": "ganning",
+      "name": "甘寧",
+      "faction": "wu",
+      "type": "general",
+      "cost": 3,
+      "appearances": 300,
+      "wins": 165,
+      "losses": 135,
+      "draws": 0,
+      "plays": 998,
+      "playedAppearances": 296,
+      "opportunities": 9280,
+      "mana": 2994
+    },
+    "taishici": {
+      "id": "taishici",
+      "name": "太史慈",
+      "faction": "wu",
+      "type": "general",
+      "cost": 4,
+      "appearances": 350,
+      "wins": 188,
+      "losses": 162,
+      "draws": 0,
+      "plays": 1090,
+      "playedAppearances": 342,
+      "opportunities": 3697,
+      "mana": 4360
+    },
+    "sunshangxiang": {
+      "id": "sunshangxiang",
+      "name": "孫尚香",
+      "faction": "wu",
+      "type": "general",
+      "cost": 3,
+      "appearances": 310,
+      "wins": 165,
+      "losses": 145,
+      "draws": 0,
+      "plays": 1036,
+      "playedAppearances": 302,
+      "opportunities": 8993,
+      "mana": 3108
+    },
+    "lvbu": {
+      "id": "lvbu",
+      "name": "呂布",
+      "faction": "qun",
+      "type": "general",
+      "cost": 6,
+      "appearances": 340,
+      "wins": 190,
+      "losses": 150,
+      "draws": 0,
+      "plays": 880,
+      "playedAppearances": 328,
+      "opportunities": 894,
+      "mana": 5280
+    },
+    "diaochan": {
+      "id": "diaochan",
+      "name": "貂蟬",
+      "faction": "qun",
+      "type": "general",
+      "cost": 3,
+      "appearances": 340,
+      "wins": 168,
+      "losses": 168,
+      "draws": 4,
+      "plays": 935,
+      "playedAppearances": 330,
+      "opportunities": 14180,
+      "mana": 2805
+    },
+    "huaxiong": {
+      "id": "huaxiong",
+      "name": "華雄",
+      "faction": "qun",
+      "type": "general",
+      "cost": 3,
+      "appearances": 360,
+      "wins": 184,
+      "losses": 172,
+      "draws": 4,
+      "plays": 1503,
+      "playedAppearances": 360,
+      "opportunities": 9721,
+      "mana": 4509
+    },
+    "zhangjiao": {
+      "id": "zhangjiao",
+      "name": "張角",
+      "faction": "qun",
+      "type": "general",
+      "cost": 5,
+      "appearances": 260,
+      "wins": 144,
+      "losses": 116,
+      "draws": 0,
+      "plays": 369,
+      "playedAppearances": 195,
+      "opportunities": 2071,
+      "mana": 1845
+    },
+    "spear": {
+      "id": "spear",
+      "name": "長槍兵",
+      "faction": "all",
+      "type": "troop",
+      "cost": 3,
+      "appearances": 910,
+      "wins": 439,
+      "losses": 463,
+      "draws": 8,
+      "plays": 4800,
+      "playedAppearances": 910,
+      "opportunities": 10892,
+      "mana": 14400
+    },
+    "shield": {
+      "id": "shield",
+      "name": "盾兵",
+      "faction": "all",
+      "type": "troop",
+      "cost": 4,
+      "appearances": 1090,
+      "wins": 586,
+      "losses": 496,
+      "draws": 8,
+      "plays": 4688,
+      "playedAppearances": 1090,
+      "opportunities": 8276,
+      "mana": 18752
+    },
+    "archer": {
+      "id": "archer",
+      "name": "弓箭兵",
+      "faction": "all",
+      "type": "troop",
+      "cost": 2,
+      "appearances": 1070,
+      "wins": 514,
+      "losses": 552,
+      "draws": 4,
+      "plays": 5181,
+      "playedAppearances": 1068,
+      "opportunities": 40009,
+      "mana": 10362
+    },
+    "cavalry": {
+      "id": "cavalry",
+      "name": "騎兵",
+      "faction": "all",
+      "type": "troop",
+      "cost": 4,
+      "appearances": 750,
+      "wins": 309,
+      "losses": 441,
+      "draws": 0,
+      "plays": 2619,
+      "playedAppearances": 746,
+      "opportunities": 8421,
+      "mana": 10476
+    },
+    "medic": {
+      "id": "medic",
+      "name": "軍醫",
+      "faction": "all",
+      "type": "troop",
+      "cost": 2,
+      "appearances": 1010,
+      "wins": 537,
+      "losses": 465,
+      "draws": 8,
+      "plays": 4518,
+      "playedAppearances": 1010,
+      "opportunities": 37408,
+      "mana": 9036
+    },
+    "ram": {
+      "id": "ram",
+      "name": "攻城車",
+      "faction": "all",
+      "type": "troop",
+      "cost": 4,
+      "appearances": 590,
+      "wins": 342,
+      "losses": 248,
+      "draws": 0,
+      "plays": 2436,
+      "playedAppearances": 590,
+      "opportunities": 4401,
+      "mana": 9744
+    },
+    "catapult": {
+      "id": "catapult",
+      "name": "投石車",
+      "faction": "all",
+      "type": "troop",
+      "cost": 5,
+      "appearances": 680,
+      "wins": 443,
+      "losses": 237,
+      "draws": 0,
+      "plays": 2135,
+      "playedAppearances": 672,
+      "opportunities": 3058,
+      "mana": 10675
+    },
+    "scout": {
+      "id": "scout",
+      "name": "斥候",
+      "faction": "all",
+      "type": "troop",
+      "cost": 1,
+      "appearances": 640,
+      "wins": 268,
+      "losses": 372,
+      "draws": 0,
+      "plays": 2953,
+      "playedAppearances": 640,
+      "opportunities": 49350,
+      "mana": 2953
+    },
+    "fireball": {
+      "id": "fireball",
+      "name": "火球",
+      "faction": "all",
+      "type": "spell",
+      "cost": 4,
+      "appearances": 910,
+      "wins": 456,
+      "losses": 454,
+      "draws": 0,
+      "plays": 1598,
+      "playedAppearances": 748,
+      "opportunities": 18190,
+      "mana": 6392
+    },
+    "arrows": {
+      "id": "arrows",
+      "name": "箭雨",
+      "faction": "all",
+      "type": "spell",
+      "cost": 3,
+      "appearances": 680,
+      "wins": 327,
+      "losses": 353,
+      "draws": 0,
+      "plays": 2765,
+      "playedAppearances": 676,
+      "opportunities": 18716,
+      "mana": 8295
+    },
+    "lightning": {
+      "id": "lightning",
+      "name": "落雷",
+      "faction": "all",
+      "type": "spell",
+      "cost": 5,
+      "appearances": 400,
+      "wins": 197,
+      "losses": 199,
+      "draws": 4,
+      "plays": 594,
+      "playedAppearances": 321,
+      "opportunities": 2406,
+      "mana": 2970
+    },
+    "fire": {
+      "id": "fire",
+      "name": "火攻",
+      "faction": "all",
+      "type": "spell",
+      "cost": 4,
+      "appearances": 270,
+      "wins": 148,
+      "losses": 122,
+      "draws": 0,
+      "plays": 160,
+      "playedAppearances": 107,
+      "opportunities": 5847,
+      "mana": 640
+    },
+    "inspire": {
+      "id": "inspire",
+      "name": "鼓舞",
+      "faction": "all",
+      "type": "spell",
+      "cost": 2,
+      "appearances": 570,
+      "wins": 252,
+      "losses": 318,
+      "draws": 0,
+      "plays": 2014,
+      "playedAppearances": 563,
+      "opportunities": 36371,
+      "mana": 4028
+    },
+    "guard": {
+      "id": "guard",
+      "name": "固守",
+      "faction": "all",
+      "type": "spell",
+      "cost": 2,
+      "appearances": 450,
+      "wins": 224,
+      "losses": 222,
+      "draws": 4,
+      "plays": 1484,
+      "playedAppearances": 429,
+      "opportunities": 31466,
+      "mana": 2968
+    },
+    "barricade": {
+      "id": "barricade",
+      "name": "拒馬",
+      "faction": "all",
+      "type": "spell",
+      "cost": 2,
+      "appearances": 330,
+      "wins": 152,
+      "losses": 174,
+      "draws": 4,
+      "plays": 1126,
+      "playedAppearances": 309,
+      "opportunities": 23633,
+      "mana": 2252
+    },
+    "ambush": {
+      "id": "ambush",
+      "name": "伏兵",
+      "faction": "all",
+      "type": "spell",
+      "cost": 4,
+      "appearances": 450,
+      "wins": 194,
+      "losses": 252,
+      "draws": 4,
+      "plays": 1459,
+      "playedAppearances": 449,
+      "opportunities": 5565,
+      "mana": 5836
+    }
+  },
+  "diversity": {
+    "includedCards": 32,
+    "playedCards": 32,
+    "meanDistinct": 7.5665,
+    "meanEffective": 6.998208256086896,
+    "totalPlays": 54451,
+    "minDistinct": 5,
+    "maxDistinct": 8
+  },
+  "averageDuration": 172.3597999999956,
+  "timeoutGames": 798,
+  "castleDestroyedGames": 202,
+  "invalidStates": 0,
+  "medic": {
+    "totalHealEvents": 80326,
+    "deployedPlayerGames": 1010,
+    "zeroHealPlayerGames": 0
+  },
+  "seconds": 76.899,
+  "basedOn": "a559ce63d908a363c1fa849488556239bc224561",
+  "provenance": "sourceHashes identify the exact engine/data committed alongside this report; simulations completed before commit creation.",
+  "baseline": {
+    "commit": "c7465f050b3fec520d4193fcf6702ed345aa69cb",
+    "seed": 20261005,
+    "sourceHashes": {
+      "engine": "937219cb648e8245647bc8fae97998e603d0d56afc44b1f8c878038b289aca80",
+      "data": "8916076eb037bd6aceb7057eb83f99bad6ea7aacabcc7fcec19155c2f133fa6c",
+      "equipment": "804539ce724fb1da02400a2182d1eb858b0daaac79d36f2e5ae1e9faac78723f"
+    },
+    "crossStats": {
+      "shu": {
+        "appearances": 300,
+        "wins": 98,
+        "losses": 200,
+        "draws": 2,
+        "pairedBootstrap95": [
+          0.2572463768115942,
+          0.40350877192982454
+        ]
+      },
+      "wei": {
+        "appearances": 300,
+        "wins": 131,
+        "losses": 165,
+        "draws": 4,
+        "pairedBootstrap95": [
+          0.36496350364963503,
+          0.5263157894736842
+        ]
+      },
+      "wu": {
+        "appearances": 300,
+        "wins": 206,
+        "losses": 86,
+        "draws": 8,
+        "pairedBootstrap95": [
+          0.629746835443038,
+          0.7736486486486487
+        ]
+      },
+      "qun": {
+        "appearances": 300,
+        "wins": 155,
+        "losses": 139,
+        "draws": 6,
+        "pairedBootstrap95": [
+          0.44525547445255476,
+          0.603225806451613
+        ]
+      }
+    },
+    "sideStats": [
+      {
+        "appearances": 1000,
+        "wins": 493,
+        "losses": 493,
+        "draws": 14
+      },
+      {
+        "appearances": 1000,
+        "wins": 493,
+        "losses": 493,
+        "draws": 14
+      }
+    ],
+    "diversity": {
+      "includedCards": 32,
+      "playedCards": 32,
+      "meanDistinct": 7.5425,
+      "meanEffective": 7.013823396894271,
+      "totalPlays": 50362,
+      "minDistinct": 5,
+      "maxDistinct": 8
+    },
+    "averageDuration": 160.7199999999953,
+    "timeoutGames": 601
+  },
+  "holdout": {
+    "seed": 20261006,
+    "games": 1000,
+    "sourceHashes": {
+      "engine": "1b79ec4b94f1e85dcd48023dcdf048acd85966656178552ca4d69b5f2e38f895",
+      "data": "f3e942d25f4662c7c068a74e4d533678f4aa4bd50ce02b955a12520e2d13da5d",
+      "equipment": "14c9a800ba7f34023e5e6014fff964dcbc122a84ea7c29f6ce07ee99219e8385"
+    },
+    "crossStats": {
+      "shu": {
+        "appearances": 300,
+        "wins": 129,
+        "losses": 171,
+        "draws": 0,
+        "pairedBootstrap95": [
+          0.3546099290780142,
+          0.5086206896551724
+        ]
+      },
+      "wei": {
+        "appearances": 300,
+        "wins": 139,
+        "losses": 159,
+        "draws": 2,
+        "pairedBootstrap95": [
+          0.3900709219858156,
+          0.5422077922077922
+        ]
+      },
+      "wu": {
+        "appearances": 300,
+        "wins": 166,
+        "losses": 132,
+        "draws": 2,
+        "pairedBootstrap95": [
+          0.4779874213836478,
+          0.6279761904761905
+        ]
+      },
+      "qun": {
+        "appearances": 300,
+        "wins": 164,
+        "losses": 136,
+        "draws": 0,
+        "pairedBootstrap95": [
+          0.46785714285714286,
+          0.6225806451612903
+        ]
+      }
+    },
+    "sideStats": [
+      {
+        "appearances": 1000,
+        "wins": 501,
+        "losses": 497,
+        "draws": 2
+      },
+      {
+        "appearances": 1000,
+        "wins": 497,
+        "losses": 501,
+        "draws": 2
+      }
+    ],
+    "diversity": {
+      "includedCards": 32,
+      "playedCards": 32,
+      "meanDistinct": 7.624,
+      "meanEffective": 7.0470284916008366,
+      "totalPlays": 54741,
+      "minDistinct": 6,
+      "maxDistinct": 8
+    },
+    "averageDuration": 173.21179999999572,
+    "timeoutGames": 828,
+    "invalidStates": 0,
+    "medic": {
+      "totalHealEvents": 85937,
+      "deployedPlayerGames": 1078,
+      "zeroHealPlayerGames": 0
+    }
+  },
+  "validation": {
+    "automaticTests": 104,
+    "browserSmoke": "not run: no Chromium executable available",
+    "realPhoneFPS": "not measured",
+    "liveHumanSession": "not tested"
+  }
+}
