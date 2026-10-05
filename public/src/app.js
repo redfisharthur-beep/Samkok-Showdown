@@ -1,3 +1,4 @@
+import {cardArtwork} from './card-artwork.js';
 import {EQUIPMENT,EQUIPMENT_SLOTS,EQUIPMENT_RARITIES,equipmentItem,equipmentDescription,normalizeEquipment} from './equipment.js';
 import {summarizeRecords} from './record-summary.js';
 import {drawSpellEffect} from './spell-effects.js';
@@ -29,8 +30,8 @@ function holdDetails(element,title,body){let timer,held=false;element.onpointerd
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const imageButton=(id,label,file,disabled=false,selected=false,type='battlefield')=>`<button id="${id}" class="image-button${selected?' selected':''}" aria-label="${label}" ${disabled?'disabled':''}>${img(type,file,label)}</button>`;
-const img=(type,id,label)=>`<span class="art" data-label="${esc(label)}"><img src="${asset(type,id)}" alt="${esc(label)}"></span>`;
-function hydrate(){app.querySelectorAll('img').forEach(i=>{const art=i.closest('.art');i.onload=()=>art?.classList.add('loaded');i.onerror=()=>{i.style.display='none';art?.classList.remove('loaded');};if(i.complete&&i.naturalWidth)art?.classList.add('loaded');});}
+const img=(type,id,label)=>`<span class="art" data-label="${esc(label)}"><img ${type==='cards'?'data-card-art="true"':''} src="${asset(type,id)}" alt="${esc(label)}"></span>`;
+function hydrate(){app.querySelectorAll('img').forEach(i=>{const art=i.closest('.art');const loaded=()=>{if(i.dataset.cardArt&&!i.dataset.normalized){i.dataset.normalized='true';try{const source=cardArtwork(i);if(source!==i.src)i.src=source;}catch{}}art?.classList.add('loaded');};i.onload=loaded;i.onerror=()=>{i.style.display='none';art?.classList.remove('loaded');};if(i.complete&&i.naturalWidth)loaded();});}
 const frame=(body)=>{app.innerHTML=body;hydrate();sound.scene(app.querySelector('.battle')?'battle':app.querySelector('.result')?'result':'home');};
 let battle=null,raf=0,recorded=false,drag=null,lordDrag=null,selectedCard=null,placement=null,images=new Map();
 function stop(){cancelAnimationFrame(raf);clearTimeout(roomPoll);++matchTicket;commandPending=false;online=null;sessionStorage.removeItem('samkok-room');battle=null;drag=null;lordDrag=null;selectedCard=null;placement=null;}
