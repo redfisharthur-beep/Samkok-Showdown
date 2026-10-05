@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CARDS,defaultDeck,trialDeck,validateDeck,FACTIONS} from '../public/src/data.js';
-import {Battle,trialDifficulty,walkable,findPath,advanceGround,TERRAIN,directPath,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP} from '../public/src/engine.js';
+import {Battle,trialDifficulty,walkable,findPath,advanceGround,TERRAIN,directPath,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP,visionRange} from '../public/src/engine.js';
 test('32 cards and all legal faction decks',()=>{assert.equal(CARDS.length,32);for(const f of Object.keys(FACTIONS))assert.ok(validateDeck(f,defaultDeck(f)));assert.equal(validateDeck('shu',defaultDeck('wei')),false);assert.equal(validateDeck('shu',['spear','shield','archer','cavalry','fireball','arrows','lightning','fire']),false);});
 test('placement validates before spending; legal play rotates hand',()=>{const b=new Battle('shu',defaultDeck('shu'));assert.equal(b.play(0,0,NaN,200),false);assert.equal(b.sides[0].morale,5);assert.equal(b.play(0,0,150,700),true);assert.equal(b.sides[0].morale,0);assert.equal(b.sides[0].queue.at(-1),'guanyu');assert.equal(b.play(0,0,150,700),false);});
 test('ultimates one use, dead lords cannot activate',()=>{for(const f of Object.keys(FACTIONS)){const b=new Battle(f,defaultDeck(f));b.sides[0].charge=100;assert.equal(b.ultimate(0),true);assert.equal(b.ultimate(0),false);}const b=new Battle('shu',defaultDeck('shu'));b.sides[0].charge=100;b.damage(b.sides[0].lord,100000,1);assert.equal(b.ultimate(0),false);const charge=b.sides[0].charge;b.gain(0,5);assert.equal(b.sides[0].charge,charge);});
@@ -58,4 +58,79 @@ test('every finite troop release snaps to the closest own-land rectangle on both
 
 test('attackers retain living targets when closer enemies arrive and reacquire after death',()=>{for(const kind of ['lord','spear','ram','tower']){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};const lord=b.sides[0].lord,tower=b.buildings.find(t=>t.side===0&&t.tower);b.units=[];b.buildings=[];let u;if(kind==='lord'){u=lord;b.units=[u];}else if(kind==='tower'){u=tower;b.buildings=[u];}else{b.spawn({...CARDS.find(c=>c.id===kind),count:1},0,149,600);u=b.units[0];}u.x=149;u.y=600;u.speed=0;u.atk=0;const target={id:++b.id,side:1,x:149,y:550,hp:10000,maxHp:10000,atk:0,speed:0,range:0,cool:100,castle:kind==='ram'};b.buildings.push(target);b.update(.1);if(kind==='lord'){target.castle=false;b.units.push(target);b.buildings=b.buildings.filter(t=>t!==target);b.update(.1);}assert.equal(u.targetId,target.id);const nearer={...target,id:++b.id,y:590};b.units.push(nearer);b.update(.1);assert.equal(u.targetId,target.id);target.y=500;b.update(.1);assert.equal(u.targetId,target.id);target.hp=0;b.update(.1);assert.equal(u.targetId,nearer.id);}});
 
-test('medics keep advancing during healing cooldown and after allies recover',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};b.units=[];b.buildings=[];const y=side?300:562;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},side,149,y);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,149,y);const [ally,medic]=b.units;ally.hp-=200;medic.cool=.8;const before=medic.y;b.update(.1);assert.ok(side?medic.y>before:medic.y<before);medic.cool=0;const hp=ally.hp;b.update(.1);assert.equal(ally.hp,hp+65);ally.hp=ally.maxHp;const healedY=medic.y;b.update(.1);assert.ok(side?medic.y>healedY:medic.y<healedY);}});
+test('medics stop during healing cooldown and resume only after allies recover',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};b.units=[];b.buildings=[];const y=side?300:562;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},side,149,y);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,149,y+(side?-55:55));const [ally,medic]=b.units;ally.hp-=200;medic.cool=.8;const before={x:medic.x,y:medic.y};for(let i=0;i<5;i++)b.update(.1);assert.deepEqual({x:medic.x,y:medic.y},before);medic.cool=0;const hp=ally.hp;b.update(.1);assert.equal(ally.hp,hp+65);ally.hp=ally.maxHp;const healedY=medic.y;b.update(.1);assert.ok(side?medic.y>healedY:medic.y<healedY);}});
+
+function sightBattle(kind,side){
+ const b=new Battle('shu',defaultDeck('shu'),'shu');b.ai=()=>{};
+ const lord=b.sides[side].lord,base=b.buildings.find(t=>t.side===side&&t.tower);
+ b.units=[];b.buildings=[];
+ let u;
+ if(kind==='lord'){u=lord;b.units.push(u);}
+ else if(kind==='tower'){u=base;b.buildings.push(u);}
+ else{b.spawn({...CARDS.find(c=>c.id===kind),count:1},side,100,side?250:600);u=b.units[0];}
+ Object.assign(u,{x:100,y:side?250:600,speed:0,atk:0});
+ const enemy=x=>{const t={id:++b.id,side:1-side,x,y:u.y,hp:10000,maxHp:10000,atk:0,speed:0,range:0,cool:100};if(kind==='ram'){t.castle=true;b.buildings.push(t);}else b.units.push(t);return t;};
+ return {b,u,enemy};
+}
+
+test('sight locks the first discovery, not a later closer enemy, on both sides',()=>{
+ for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
+  const {b,u,enemy}=sightBattle(kind,side),first=enemy(240),closer=enemy(140);
+  b.update(.1);assert.equal(u.targetId,first.id);
+  first.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,first.id);
+  first.x+=1;b.update(.1);assert.equal(u.targetId,closer.id);
+  first.x=120;b.update(.1);assert.equal(u.targetId,closer.id);
+  closer.hp=0;b.update(.1);assert.equal(u.targetId,first.id);
+ }
+});
+
+test('enemies outside sight are never locked; entry is detected immediately',()=>{
+ for(const side of [0,1])for(const kind of ['lord','spear','ram','tower']){
+  const {b,u,enemy}=sightBattle(kind,side),far=enemy(100+visionRange(u)+1);
+  b.update(.1);assert.equal(u.targetId,undefined);
+  far.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,far.id);
+  far.x++;b.update(.1);assert.equal(u.targetId,undefined);
+ }
+});
+
+test('melee troops pursue a visible target beyond attack range without switching',()=>{
+ for(const side of [0,1]){
+  const {b,u,enemy}=sightBattle('spear',side),first=enemy(280);u.speed=34;u.atk=40;u.cool=0;
+  b.update(.1);assert.ok(u.x>100);assert.equal(first.hp,first.maxHp);assert.equal(u.targetId,first.id);
+  const closer=enemy(u.x+20);b.update(.1);assert.equal(u.targetId,first.id);assert.equal(closer.hp,closer.maxHp);
+  let hit=false;for(let i=0;i<100;i++){b.update(.1);if(first.hp<first.maxHp){hit=true;break;}}
+  assert.equal(hit,true);assert.equal(u.targetId,first.id);
+ }
+});
+
+test('troops march toward buildings without locking unseen objectives and intercept discovered enemies',()=>{
+ for(const side of [0,1]){
+  const {b,u,enemy}=sightBattle('spear',side);u.speed=34;
+  const castle={id:++b.id,side:1-side,x:100,y:side?723:139,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(castle);
+  const before=u.y;b.update(.1);assert.ok(side?u.y>before:u.y<before);assert.equal(u.targetId,undefined);
+  const t=enemy(180);b.update(.1);assert.equal(u.targetId,t.id);
+ }
+});
+
+test('medics hold still through repeated cooldowns until all in-range allies recover',()=>{
+ for(const side of [0,1]){
+  const {b,u}=sightBattle('medic',side);u.speed=30;u.cool=0;
+  b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},side,100,u.y+(side?55:-55));
+  const ally=b.units.at(-1);ally.hp-=260;const position={x:u.x,y:u.y};
+  for(let i=0;i<100&&ally.hp<ally.maxHp;i++){b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);}
+  assert.equal(ally.hp,ally.maxHp);assert.equal(u.targetId,undefined);
+  b.update(.1);assert.ok(side?u.y>position.y:u.y<position.y);
+ }
+});
+
+test('wounded allies stop a medic as soon as they enter healing range; overlap separation cannot push it away',()=>{
+ for(const side of [0,1]){
+  const {b,u}=sightBattle('medic',side);u.speed=30;u.cool=10;
+  b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},side,100,u.y+(side?151:-151));
+  const ally=b.units.at(-1);ally.hp-=200;b.update(.1);const position={x:u.x,y:u.y};
+  assert.ok(Math.hypot(u.x-ally.x,u.y-ally.y)<150);
+  b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);
+  ally.x=u.x;ally.y=u.y;b.update(.1);assert.deepEqual({x:u.x,y:u.y},position);
+  ally.hp=0;b.update(.1);assert.ok(side?u.y>position.y:u.y<position.y);
+ }
+});
