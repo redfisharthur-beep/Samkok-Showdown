@@ -1,3 +1,11 @@
+## 2026-10-06 — 修正 Android App LINE 登入
+- 找到 App 登入失敗原因：LINE OAuth 在外部 LINE／瀏覽器完成後，瀏覽器 session cookie 不會共享給 Android WebView，因此 App 仍被判定未登入。
+- `src/worker.js` 新增 App OAuth 分流：`/api/auth/line?client=app` 完成 LINE 驗證後建立 2 分鐘、單次使用的登入票券，導向 `samkokshowdown://auth?ticket=...`；App 再透過 `/api/auth/app-session` 交換自己的 HttpOnly session cookie。網頁版既有 LINE 登入流程維持不變。
+- Accounts Durable Object 新增一次性 App ticket 建立／消耗流程，票券消耗後立即刪除，避免重放。
+- `public/src/app.js` 在 Capacitor 原生環境改用 Browser plugin 開啟 LINE 登入，並用 App plugin 接收 deep link；交換 session 成功後重新載入首頁。
+- `package.json` 新增 `@capacitor/app`、`@capacitor/browser`；`scripts/configure-android.mjs` 在原生 MainActivity 加入 `samkokshowdown://auth` intent filter，同時保留直向鎖定。
+- 尚未完成：需重新部署 Cloudflare Worker 並產生新版 APK 後做實機 LINE 登入驗證。
+
 ## 2026-10-06 — Android App 原型與雲端 APK 建置
 - 新增 Capacitor 8 Android 前置設定：`package.json` 加入 `@capacitor/core`、`@capacitor/android`、CLI 與 Android 初始化／同步／Debug 建置指令，Node 版本要求設為 22 以上。
 - 新增 `capacitor.config.json`，App ID 使用 `com.samkok.showdown`、名稱為 `Samkok Showdown`；第一階段 Debug App 直接連線正式 Cloudflare 網址 `https://samkok-showdown.redfisharthur.workers.dev`，因此目前 LINE 登入、配對、國戰、戰績與現有後端可維持同源運作。
