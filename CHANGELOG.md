@@ -1,3 +1,9 @@
+## 2026-10-06 — 修正 Android 建置測試的 window 相容性
+- Android Actions 失敗原因為 `public/src/app.js` 新增的 Capacitor 判斷直接存取 `window`，使 Node VM 測試環境出現 `ReferenceError: window is not defined`，4 個既有 app-input 測試因此失敗。
+- 直接修改原始程式，改由 `globalThis.window?.Capacitor || globalThis.Capacitor` 取得 Capacitor bridge；瀏覽器、Android App 與 Node 測試環境皆可安全載入。
+- 未停用或略過任何測試；LINE App OAuth 邏輯維持不變。
+- 驗證：等待 GitHub Actions 重新執行完整 `npm test` 與 Android APK build。
+
 ## 2026-10-06 — 修正 Android App LINE 登入
 - 找到 App 登入失敗原因：LINE OAuth 在外部 LINE／瀏覽器完成後，瀏覽器 session cookie 不會共享給 Android WebView，因此 App 仍被判定未登入。
 - `src/worker.js` 新增 App OAuth 分流：`/api/auth/line?client=app` 完成 LINE 驗證後建立 2 分鐘、單次使用的登入票券，導向 `samkokshowdown://auth?ticket=...`；App 再透過 `/api/auth/app-session` 交換自己的 HttpOnly session cookie。網頁版既有 LINE 登入流程維持不變。
