@@ -1,0 +1,67 @@
+name: Build Android Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "package.json"
+      - "capacitor.config.json"
+      - "scripts/configure-android.mjs"
+      - ".github/workflows/android-debug.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 16 SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      - name: Apply native configuration
+        run: node scripts/configure-android.mjs
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Re-apply native configuration
+        run: node scripts/configure-android.mjs
+
+      - name: Build debug APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: samkok-showdown-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
