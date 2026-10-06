@@ -1,0 +1,12 @@
+{
+  "appId": "com.samkok.showdown",
+  "appName": "Samkok Showdown",
+  "webDir": "public",
+  "server": {
+    "url": "https://samkok-showdown.redfisharthur.workers.dev",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
