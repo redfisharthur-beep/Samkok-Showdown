@@ -23,5 +23,18 @@ if (!/android:screenOrientation=/.test(match[0])) {
   manifest = manifest.replace(match[0], updatedActivity);
 }
 
+if (!manifest.includes('android:scheme="samkokshowdown"')) {
+  manifest = manifest.replace(
+    /<\/activity>/,
+    `            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="samkokshowdown" android:host="auth" />
+            </intent-filter>
+        </activity>`
+  );
+}
+
 fs.writeFileSync(manifestPath, manifest);
-console.log('Android native configuration applied: portrait orientation.');
+console.log('Android native configuration applied: portrait orientation and LINE auth deep link.');
