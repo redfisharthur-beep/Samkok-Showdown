@@ -7,10 +7,10 @@ import {createGameAudio} from './audio.js';
 import {FACTIONS,CARDS,card,pool,defaultDeck,validateDeck,asset,trialDeck} from './data.js';
 import {PROVINCES,provinceAt,TERRITORY_KEYS} from './territory.js';
 import {Battle,W,H,TERRAIN,lordPoint,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP} from './engine.js';
-const app=document.querySelector('#app'),KEY='samkok-v1',sound=createGameAudio(),nativeApp=Boolean(window.Capacitor?.isNativePlatform?.());
-async function lineLogin(){if(!nativeApp){location.assign('/api/auth/line');return;}const browser=window.Capacitor?.Plugins?.Browser;if(!browser){location.assign('/api/auth/line');return;}await browser.open({url:location.origin+'/api/auth/line?client=app'});}
-async function acceptAppLogin(url){let parsed;try{parsed=new URL(url);}catch{return;}if(parsed.protocol!=='samkokshowdown:'||parsed.hostname!=='auth')return;const ticket=parsed.searchParams.get('ticket');if(!ticket)return;try{await window.Capacitor?.Plugins?.Browser?.close?.();await api('auth/app-session',{ticket});location.replace('/');}catch{alert('LINE 登入失敗，請重新登入');}}
-if(nativeApp)window.Capacitor?.Plugins?.App?.addListener?.('appUrlOpen',event=>acceptAppLogin(event.url));
+const app=document.querySelector('#app'),KEY='samkok-v1',sound=createGameAudio(),cap=globalThis.window?.Capacitor||globalThis.Capacitor,nativeApp=Boolean(cap?.isNativePlatform?.());
+async function lineLogin(){if(!nativeApp){location.assign('/api/auth/line');return;}const browser=cap?.Plugins?.Browser;if(!browser){location.assign('/api/auth/line');return;}await browser.open({url:location.origin+'/api/auth/line?client=app'});}
+async function acceptAppLogin(url){let parsed;try{parsed=new URL(url);}catch{return;}if(parsed.protocol!=='samkokshowdown:'||parsed.hostname!=='auth')return;const ticket=parsed.searchParams.get('ticket');if(!ticket)return;try{await cap?.Plugins?.Browser?.close?.();await api('auth/app-session',{ticket});location.replace('/');}catch{alert('LINE 登入失敗，請重新登入');}}
+if(nativeApp)cap?.Plugins?.App?.addListener?.('appUrlOpen',event=>acceptAppLogin(event.url));
 document.addEventListener('pointerdown',()=>sound.unlock(),{capture:true});
 document.addEventListener('keydown',()=>sound.unlock(),{capture:true});
 let profile;try{profile=JSON.parse(localStorage.getItem(KEY));}catch{}if(!profile||!Object.hasOwn(FACTIONS,profile.faction))profile={name:'',faction:null,decks:{},records:[],tokens:1,changedAt:0,contribution:0};
