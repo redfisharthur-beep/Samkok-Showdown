@@ -1,3 +1,9 @@
+## 2026-10-06 — 裝備介面選取狀態視覺簡化
+- 直接修改 `public/style.css` 原始裝備介面樣式，不新增覆寫補丁。
+- 主公／武將頭像、裝備欄位與裝備清單：選中的項目略微放大並恢復正常亮度與飽和度；未選中的項目改為輕度反灰、降低亮度與透明度。
+- 移除選取外框、稀有度邊框與額外 box-shadow，讓介面更乾淨，選取狀態改以尺寸與明暗差異表現。
+- 驗證：確認 `.equipment-portrait.active`、`.equipment-slot.active`、`.equipment-item.active` 均不再使用外框，且未選中項目均有反灰處理。
+
 ## 2026-10-06 — 修正 Android 建置測試的 window 相容性
 - Android Actions 失敗原因為 `public/src/app.js` 新增的 Capacitor 判斷直接存取 `window`，使 Node VM 測試環境出現 `ReferenceError: window is not defined`，4 個既有 app-input 測試因此失敗。
 - 直接修改原始程式，改由 `globalThis.window?.Capacitor || globalThis.Capacitor` 取得 Capacitor bridge；瀏覽器、Android App 與 Node 測試環境皆可安全載入。
