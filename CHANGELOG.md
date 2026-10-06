@@ -4,7 +4,8 @@
 - 新增 `scripts/configure-android.mjs`，Android 專案生成後直接修改原生 `AndroidManifest.xml`，將 MainActivity 鎖定為直向。
 - 新增 GitHub Actions `.github/workflows/android-debug.yml`：使用 Node 22、Java 21、Android API 36，自動生成 Capacitor Android 專案、套用直向設定並輸出可安裝的 Debug APK artifact。
 - 此階段以快速實機驗證為目標；正式 Google Play 上架前，仍應改為本機打包 Web 資產、完善 App lifecycle／Safe Area／登入 deep link、正式簽章、App icon 與 splash screen。
-- 尚未完成：等待首次 GitHub Actions 建置結果；若成功即可直接下載 `samkok-showdown-debug-apk` 測試。
+- 驗證：首次建置因 GitHub Android SDK Action 相容性問題失敗後，已改用 runner 內建 SDK 並修正 sdkmanager 路徑；第三次建置成功，Android 16 / API 36、Capacitor 8、直向設定與 Gradle Debug APK 全部完成，已產生 `samkok-showdown-debug-apk` artifact。
+- 尚未完成：Debug APK 尚未做實機安裝與 LINE 登入／對戰／背景切換測試；正式上架前仍需本機資產打包、App lifecycle、Safe Area、deep link、簽章、icon 與 splash screen。
 
 ## 2026-10-06 — 主公選擇頁新增遊戲名稱與縮小排列間距
 - 直接修改 `public/src/app.js`，在初始四主公選擇頁上方新增 `/assets/ui/Samkok-Showdown.webp` 遊戲名稱圖；跳槽用的主公選擇頁維持不顯示遊戲標題，避免重複佔用空間。
