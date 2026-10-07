@@ -1,3 +1,9 @@
+## 2026-10-07 — 修正出牌誤移主公與關羽動畫漏播
+
+- 直接修改 `public/src/app.js`：已有選取卡牌時，優先處理戰場放置，再判斷點擊是否落在主公移動範圍；未選卡時仍可照常拖曳主公。
+- 直接修改 `public/src/phaser-combat-stage.js`：關羽動畫起播不再沿用建立精靈時的舊攻擊時間，並容許線上插值的少量時間差，避免第一次或同步邊界的出手漏播。
+- 驗證：兩個修改後的模組均通過 `node --check`。本次未執行完整專案測試或瀏覽器實機測試。
+
 ## 2026-10-07 — 加入關羽逐格近戰出招試作
 
 - 原檔：`public/src/phaser-combat-stage.js`；新增 `public/assets/units/guanyu-attack.webp`。

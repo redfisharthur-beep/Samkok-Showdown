@@ -261,7 +261,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               sprite, scale, baseSize: width, state: null, renderX: spriteX, renderY: spriteY,
               offsetX: spriteX - u.x, offsetY: spriteY - u.y,
               lastX: u.x, lastY: u.y, lastElapsed: view.elapsed, moving: false,
-              lastHurtAt: u.hurtAt, lastAttackAt: u.attackAt, attackClip: false, freezeUntil: 0
+              lastHurtAt: u.hurtAt, lastAttackAt: undefined, attackClip: false, freezeUntil: 0
             };
             sprite.on('animationcomplete', animation => {
               if (animation?.key !== 'guanyu-attack') return;
@@ -284,11 +284,13 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
             sprite.anims.stop();
             sprite.setTexture(textureKey(u));
           } else if (u.assetId === 'guanyu' && u.type === 'general' && u.hp > 0 &&
-            u.attackAt !== undefined && u.attackAt !== item.lastAttackAt && scene.anims.exists('guanyu-attack')) {
-            item.lastAttackAt = u.attackAt;
+            u.attackAt !== undefined && u.attackAt !== item.lastAttackAt &&
+            view.elapsed - u.attackAt >= -0.1 && view.elapsed - u.attackAt < 0.5 &&
+            scene.anims.exists('guanyu-attack')) {
             item.attackClip = true;
             sprite.play('guanyu-attack', true);
           }
+          if (u.attackAt !== undefined) item.lastAttackAt = u.attackAt;
           item.state = { ...u, elapsed: view.elapsed };
         }
         for (const [id, item] of scene.units) {
