@@ -82,19 +82,20 @@ test('nearest target can change before attack, then stays locked until death',()
  const latest=enemy(110);b.update(.1);assert.equal(u.targetId,latest.id);assert.equal(u.attackTargetId,undefined);
  u.cool=0;b.update(.1);assert.equal(u.attackTargetId,latest.id);
  const closerAfterAttack=enemy(105);b.update(.1);assert.equal(u.targetId,latest.id);
- latest.x=400;u.speed=34;const before=u.x;b.update(.1);assert.ok(u.x>before);assert.equal(u.targetId,latest.id);
- latest.hp=0;b.update(.1);assert.equal(u.attackTargetId,undefined);assert.equal(u.targetId,closerAfterAttack.id);
+ latest.x=300;u.speed=34;const before=u.x;b.update(.1);assert.ok(u.x>before);assert.equal(u.targetId,latest.id);assert.equal(u.attackTargetId,latest.id);
+ latest.x=400;u.speed=0;b.update(.1);assert.equal(u.targetId,closerAfterAttack.id);assert.equal(u.attackTargetId,undefined);
+ closerAfterAttack.hp=0;b.update(.1);assert.equal(u.targetId,nearest.id);
  assert.equal(first.hp,first.maxHp);assert.equal(nearest.hp,nearest.maxHp);
 });
 
-test('pre-attack targets must stay visible; an attack lock survives leaving vision',()=>{
+test('pre-attack targets and attack locks both require vision',()=>{
  for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
   const {b,u,enemy}=sightBattle(kind,side),far=enemy(100+visionRange(u)+1);
   b.update(.1);assert.equal(u.targetId,undefined);
   far.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,far.id);
   far.x++;b.update(.1);assert.equal(u.targetId,undefined);
   far.x=120;u.atk=40;u.cool=0;b.update(.1);assert.equal(u.attackTargetId,far.id);
-  far.x=100+visionRange(u)+20;b.update(.1);assert.equal(u.targetId,far.id);
+  far.x=100+visionRange(u)+20;b.update(.1);assert.equal(u.targetId,undefined);assert.equal(u.attackTargetId,undefined);
   far.hp=0;b.update(.1);assert.equal(u.attackTargetId,undefined);assert.equal(u.targetId,undefined);
  }
 });
