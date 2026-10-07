@@ -140,11 +140,6 @@ test('wounded allies stop a medic as soon as they enter healing range; overlap s
  }
 });
 test('ordinary troops keep their building lock when a troop appears; siege keeps its building role',()=>{for(const side of [0,1])for(const kind of ['spear','archer','ram']){const {b,u}=sightBattle(kind,side);const base={id:++b.id,side:1-side,x:150,y:u.y,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(base);b.update(.1);assert.equal(u.targetId,base.id);const enemy={id:++b.id,side:1-side,x:180,y:u.y,hp:1000,maxHp:1000,atk:0,speed:0,range:0,cool:100};b.units.push(enemy);b.update(.1);assert.equal(u.targetId,base.id);}});
- for(const side of [0,1])for(const kind of ['spear','archer','ram']){
-  const {b,u}=sightBattle(kind,side);const base={id:++b.id,side:1-side,x:150,y:u.y,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(base);b.update(.1);assert.equal(u.targetId,base.id);
-  const enemy={id:++b.id,side:1-side,x:180,y:u.y,hp:1000,maxHp:1000,atk:0,speed:0,range:0,cool:100};b.units.push(enemy);b.update(.1);assert.equal(u.targetId,kind==='ram'?base.id:enemy.id);
- }
-});
 test('melee anticipation deals one hit at impact, can miss, and does not narrow splash',()=>{
  for(const miss of [false,true]){
   const {b,u,enemy}=sightBattle('spear',0);u.atk=40;u.cool=0;const target=enemy(140),hp=target.hp;
