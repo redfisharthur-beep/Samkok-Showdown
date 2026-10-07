@@ -4,7 +4,10 @@ const HEIGHT = 1066;
 const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.side}` :
   u.lord ? `lord-${u.side}-${u.assetId}` : `unit-${u.assetId}`;
 const attackTextureKey = id => `unit-${id}-attack`;
-const ATTACK_SHEET_FRAME_SIZE = { guanyu: 444, zhangfei: 222 };
+const ATTACK_SHEETS = {
+  guanyu: { frameWidth: 444, frameHeight: 444, frames: 8, fps: 24 },
+  zhangfei: { frameWidth: 632, frameHeight: 656, frames: 4, fps: 12 }
+};
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
   try {
@@ -27,10 +30,10 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       preload() {
         for (const id of unitIds) {
           this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
-          if (ATTACK_SHEET_FRAME_SIZE[id]) {
-            const frameSize = ATTACK_SHEET_FRAME_SIZE[id];
+          if (ATTACK_SHEETS[id]) {
+            const {frameWidth, frameHeight} = ATTACK_SHEETS[id];
             this.load.spritesheet(attackTextureKey(id), `/assets/units/${id}-attack.webp`,
-              { frameWidth: frameSize, frameHeight: frameSize });
+              { frameWidth, frameHeight });
           }
         }
         for (const side of [0, 1]) {
@@ -58,9 +61,8 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const attackAge = u.elapsed - (u.attackAt ?? -10);
           const attackSignal = attackAge >= 0 && attackAge < 0.34;
           const attack = attackSignal;
-          const attackFrameSize = ATTACK_SHEET_FRAME_SIZE[u.assetId] || 444;
-          const attackSheet = Boolean(ATTACK_SHEET_FRAME_SIZE[u.assetId]) &&
-            this.textures.exists(attackTextureKey(u.assetId));
+          const attackSheetConfig = ATTACK_SHEETS[u.assetId];
+          const attackSheet = Boolean(attackSheetConfig) && this.textures.exists(attackTextureKey(u.assetId));
           const dir = u.attackDirection || { x: u.side ? -1 : 1, y: 0 };
           const length = Math.hypot(dir.x, dir.y) || 1;
           const nx = dir.x / length, ny = dir.y / length;
@@ -100,7 +102,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
 
           if (!frozen) {
             if (!dead && attackSignal && attackSheet) {
-              const frame = Math.min(7, Math.floor(attackAge * 24));
+              const frame = Math.min(attackSheetConfig.frames - 1, Math.floor(attackAge * attackSheetConfig.fps));
               sprite.setTexture(attackTextureKey(u.assetId), frame);
             } else if (sprite.texture.key !== textureKey(u)) sprite.setTexture(textureKey(u));
             const playingAttackSheet = !dead && attackSignal && attackSheet;
@@ -124,7 +126,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               attack ? attackPose + (attackStyle === 'sweep' ? facing * 0.16 : attackStyle === 'charge' ? facing * 0.10 : 0) :
               item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
-            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / attackFrameSize : item.scale;
+            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / Math.max(attackSheetConfig.frameWidth, attackSheetConfig.frameHeight) : item.scale;
             sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
             sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
           }
