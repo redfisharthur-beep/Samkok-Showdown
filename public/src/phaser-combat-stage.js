@@ -56,7 +56,7 @@ export async function createPhaserCombatStage(arena) {
             hurt ? (u.side ? 1 : -1) * 0.12 : moving ? Math.sin(phase) * 0.025 : Math.sin(phase * 0.3) * 0.012;
           sprite.scaleX = item.scale * (hurt ? 0.96 : 1 + Math.sin(phase) * (moving ? 0.018 : 0.006));
           sprite.scaleY = item.scale * (hurt ? 1.04 : 1 - Math.sin(phase) * (moving ? 0.018 : 0.006));
-          sprite.setTint(hurt ? 0xffffff : 0xffffff);
+          sprite.setTint(hurt ? 0xffded0 : 0xffffff);
           sprite.setAlpha(dead ? Math.max(0, 1 - (u.elapsed - u.deathAt) / 0.4) : 1);
           if (dead) sprite.y += Math.max(0, u.elapsed - u.deathAt) * 12;
         }
@@ -86,8 +86,9 @@ export async function createPhaserCombatStage(arena) {
           live.add(u.id);
           let item = scene.units.get(u.id);
           if (!item) {
-            const size = 64;
-            const sprite = scene.add.image(u.x, u.y, 'spear-unit').setDisplaySize(size, size).setOrigin(0.5, 0.5);
+            const source = scene.textures.get('spear-unit').getSourceImage();
+            const scale = 64 / Math.max(source.width, source.height);
+            const sprite = scene.add.image(u.x, u.y, 'spear-unit').setDisplaySize(source.width * scale, source.height * scale).setOrigin(0.5, 0.5);
             item = { sprite, scale: 1, state: null, lastX: u.x, lastY: u.y };
             scene.units.set(u.id, item);
           }
