@@ -6,7 +6,8 @@ const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.sid
 const attackTextureKey = id => `unit-${id}-attack`;
 const ATTACK_SHEETS = {
   guanyu: { frameWidth: 444, frameHeight: 444, frames: 8, fps: 24 },
-  zhangfei: { frameWidth: 632, frameHeight: 656, frames: 4, fps: 12 }
+  zhangfei: { frameWidth: 632, frameHeight: 656, frames: 4, fps: 12 },
+  zhaoyun: { frameWidth: 724, frameHeight: 544, frames: 4, fps: 12 }
 };
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
