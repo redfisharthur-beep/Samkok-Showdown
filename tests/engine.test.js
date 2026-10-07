@@ -73,33 +73,38 @@ function sightBattle(kind,side){
  return {b,u,enemy};
 }
 
-test('sight acquires the nearest enemy and keeps a combat lock on both sides',()=>{
+test('units acquire the nearest enemy and keep that lock until it dies',()=>{
  for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
   const {b,u,enemy}=sightBattle(kind,side),far=enemy(240),near=enemy(140);
   b.update(.1);assert.equal(u.targetId,near.id);
   far.x=110;for(let i=0;i<12;i++)b.update(.1);assert.equal(u.targetId,near.id);
-  near.x=100+visionRange(u)+1;b.update(.1);assert.equal(u.targetId,far.id);
-  near.x=105;b.update(.1);assert.equal(u.targetId,far.id);
-  far.hp=0;b.update(.1);assert.equal(u.targetId,near.id);
+  near.x=100+visionRange(u)+1;b.update(.1);assert.equal(u.targetId,near.id);
+  near.x=105;b.update(.1);assert.equal(u.targetId,near.id);
+  near.hp=0;b.update(.1);assert.equal(u.targetId,far.id);
  }
 });
 
-test('enemies outside sight are never locked; entry is detected immediately',()=>{
+test('units acquire enemies only inside vision and reacquire after a target dies',()=>{
  for(const side of [0,1])for(const kind of ['lord','spear','ram','tower']){
   const {b,u,enemy}=sightBattle(kind,side),far=enemy(100+visionRange(u)+1);
   b.update(.1);assert.equal(u.targetId,undefined);
   far.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,far.id);
-  far.x++;b.update(.1);assert.equal(u.targetId,undefined);
+  far.x++;
+  b.update(.1);assert.equal(u.targetId,far.id);
+  far.hp=0;b.update(.1);assert.equal(u.targetId,undefined);
  }
 });
 
-test('a long pursuit redirects only after the lock delay to a much closer threat',()=>{
+test('lord drag overrides combat movement and cannot cross the river boundary',()=>{
  for(const side of [0,1]){
-  const {b,u,enemy}=sightBattle('spear',side),far=enemy(280);u.speed=34;u.atk=40;u.cool=0;
-  b.update(.1);assert.ok(u.x>100);assert.equal(far.hp,far.maxHp);assert.equal(u.targetId,far.id);
-  const closer=enemy(u.x+20);b.update(.1);assert.equal(u.targetId,far.id);
-  for(let i=0;i<12;i++)b.update(.1);assert.equal(u.targetId,closer.id);assert.ok(closer.hp<closer.maxHp);
-  const newcomer=enemy(u.x+5);for(let i=0;i<15;i++)b.update(.1);assert.equal(u.targetId,closer.id);assert.equal(newcomer.hp,newcomer.maxHp);
+  const {b,u,enemy}=sightBattle('lord',side),target=enemy(u.x+20);
+  u.speed=60;u.atk=100;u.cool=0;b.update(.1);
+  const oldX=u.x,oldY=u.y;
+  assert.equal(b.moveLord(side,oldX+80,side?300:550),true);
+  for(let i=0;i<5;i++)b.update(.1);
+  assert.ok(Math.abs(u.x-oldX)>1||Math.abs(u.y-oldY)>1);
+  assert.ok(side?u.y<=372:u.y>=490);
+  assert.ok(u.targetId===target.id||u.targetId===undefined);
  }
 });
 
