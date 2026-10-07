@@ -9,7 +9,8 @@ const ATTACK_SHEETS = {
   zhangfei: { frameWidth: 632, frameHeight: 656, frames: 4, fps: 12 },
   zhaoyun: { frameWidth: 724, frameHeight: 544, frames: 4, fps: 12 },
   zhugeliang: { frameWidth: 724, frameHeight: 544, frames: 4, fps: 12 },
-  dianwei: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 }
+  dianwei: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
+  zhangliao: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 }
 };
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
@@ -129,7 +130,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               attack ? attackPose + (attackStyle === 'sweep' ? facing * 0.16 : attackStyle === 'charge' ? facing * 0.10 : 0) :
               item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
-            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / Math.max(attackSheetConfig.frameWidth, attackSheetConfig.frameHeight) : item.scale;
+            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / attackSheetConfig.frameHeight : item.scale;
             sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
             sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
           }
