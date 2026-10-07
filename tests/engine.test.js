@@ -151,6 +151,7 @@ test('melee anticipation deals one hit at impact, can miss, and does not narrow 
  }
  const {b,u,enemy}=sightBattle('spear',0);u.atk=40;u.ability='斬擊';u.cool=0;const target=enemy(140),splash=enemy(195);for(let i=0;i<3;i++)b.update(.1);assert.equal(target.hp,9960);assert.equal(splash.hp,9960);
 });
+test('medic attack stays low while keeping its support role',()=>{assert.equal(CARDS.find(c=>c.id==='medic').atk,5);});
 test('Wu bonuses and card stats use the reduced values without changing printed card costs',()=>{
  assert.equal(FACTIONS.wu.hp,1800);assert.equal(FACTIONS.wu.range,110);const b=new Battle('wu',defaultDeck('wu'));b.sides[0].charge=100;b.ultimate(0);assert.equal(b.sides[0].morale,6);assert.equal(CARDS.find(c=>c.id==='sunshangxiang').range,175);assert.equal(CARDS.find(c=>c.id==='sunshangxiang').cost,3);
 });
