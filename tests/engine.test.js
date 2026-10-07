@@ -56,8 +56,7 @@ test('lords stop where combat ends on both sides',()=>{for(const side of [0,1]){
 
 test('every finite troop release snaps to the closest own-land rectangle on both sides',()=>{for(const side of [0,1])for(const [x,y] of [[-999,-999],[999,999],[300,431],[300,side?700:200],[149,430]]){const b=new Battle('shu',defaultDeck('shu'),'shu');b.sides[side].morale=10;const c=b.hand(side)[0],point=placementPoint(x,y,side,c);assert.ok(walkable(point));assert.ok(side?point.y<=372:point.y>=490);assert.equal(b.play(side,0,x,y),true);const unit=b.units.at(-1);assert.equal(unit.x,point.x);assert.equal(unit.y,point.y);assert.equal(b.sides[side].morale,10-c.cost);}for(const id of ['ambush','barricade']){const p=placementPoint(160,431,0,CARDS.find(c=>c.id===id));assert.ok(walkable(p));assert.equal(p.x,160);}});
 
-test('attackers retain living targets when closer enemies arrive and reacquire after death',()=>{for(const kind of ['lord','spear','ram','tower']){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};const lord=b.sides[0].lord,tower=b.buildings.find(t=>t.side===0&&t.tower);b.units=[];b.buildings=[];let u;if(kind==='lord'){u=lord;b.units=[u];}else if(kind==='tower'){u=tower;b.buildings=[u];}else{b.spawn({...CARDS.find(c=>c.id===kind),count:1},0,149,600);u=b.units[0];}u.x=149;u.y=600;u.speed=0;u.atk=0;const target={id:++b.id,side:1,x:149,y:550,hp:10000,maxHp:10000,atk:0,speed:0,range:0,cool:100,castle:kind==='ram'};b.buildings.push(target);b.update(.1);if(kind==='lord'){target.castle=false;b.units.push(target);b.buildings=b.buildings.filter(t=>t!==target);b.update(.1);}assert.equal(u.targetId,target.id);const nearer={...target,id:++b.id,y:590};b.units.push(nearer);b.update(.1);assert.equal(u.targetId,target.id);target.y=500;b.update(.1);assert.equal(u.targetId,target.id);target.hp=0;b.update(.1);assert.equal(u.targetId,nearer.id);}});
-
+test('units retarget to the nearest enemy before their first attack',()=>{for(const kind of ['lord','spear','ram','tower']){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};const lord=b.sides[0].lord,tower=b.buildings.find(t=>t.side===0&&t.tower);b.units=[];b.buildings=[];let u;if(kind==='lord'){u=lord;b.units=[u];}else if(kind==='tower'){u=tower;b.buildings=[u];}else{b.spawn({...CARDS.find(c=>c.id===kind),count:1},0,149,600);u=b.units[0];}u.x=149;u.y=600;u.speed=0;u.atk=0;const target={id:++b.id,side:1,x:149,y:550,hp:10000,maxHp:10000,atk:0,speed:0,range:0,cool:100,castle:kind==='ram'};b.buildings.push(target);b.update(.1);if(kind==='lord'){target.castle=false;b.units.push(target);b.buildings=b.buildings.filter(t=>t!==target);b.update(.1);}assert.equal(u.targetId,target.id);const nearer={...target,id:++b.id,y:590};b.units.push(nearer);b.update(.1);assert.equal(u.targetId,nearer.id);assert.equal(u.attackTargetId,undefined);target.y=500;b.update(.1);assert.equal(u.targetId,nearer.id);nearer.hp=0;b.update(.1);assert.equal(u.targetId,target.id);}});
 test('medics stop during healing cooldown and resume only after allies recover',()=>{for(const side of [0,1]){const b=new Battle('shu',defaultDeck('shu'));b.ai=()=>{};b.units=[];b.buildings=[];const y=side?300:562;b.spawn({...CARDS.find(c=>c.id==='shield'),count:1,speed:0,atk:0},side,149,y);b.spawn({...CARDS.find(c=>c.id==='medic'),count:1},side,149,y+(side?-55:55));const [ally,medic]=b.units;ally.hp-=200;medic.cool=.8;const before={x:medic.x,y:medic.y};for(let i=0;i<5;i++)b.update(.1);assert.deepEqual({x:medic.x,y:medic.y},before);medic.cool=0;const hp=ally.hp;b.update(.1);assert.equal(ally.hp,hp+45);ally.hp=ally.maxHp;const healedY=medic.y;b.update(.1);assert.ok(side?medic.y>healedY:medic.y<healedY);}});
 
 function sightBattle(kind,side){
@@ -75,28 +74,30 @@ function sightBattle(kind,side){
 
 test('medics attack the nearest enemy when no ally needs healing, and heal before attacking',()=>{const {b,u,enemy}=sightBattle('medic',0);u.atk=CARDS.find(c=>c.id==='medic').atk;u.cool=0;const far=enemy(170),near=enemy(140);const ally={id:++b.id,side:0,x:110,y:u.y,hp:50,maxHp:100,atk:0,speed:0};b.units.push(ally);b.update(.1);assert.equal(u.targetId,near.id);assert.equal(ally.hp,95);assert.equal(near.hp,near.maxHp);ally.hp=ally.maxHp;u.cool=0;for(let i=0;i<5;i++)b.update(.1);assert.equal(u.targetId,near.id);assert.ok(near.hp<near.maxHp);assert.equal(far.hp,far.maxHp);});
 
-test('units acquire the nearest enemy and keep that lock until it dies',()=>{
- for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
-  const {b,u,enemy}=sightBattle(kind,side),far=enemy(240),near=enemy(140);
-  b.update(.1);assert.equal(u.targetId,near.id);
-  far.x=110;for(let i=0;i<12;i++)b.update(.1);assert.equal(u.targetId,near.id);
-  near.x=100+visionRange(u)+1;b.update(.1);assert.equal(u.targetId,near.id);
-  near.x=105;b.update(.1);assert.equal(u.targetId,near.id);
-  near.hp=0;b.update(.1);assert.equal(u.targetId,far.id);
- }
+test('nearest target can change before attack, then stays locked until death',()=>{
+ const {b,u,enemy}=sightBattle('spear',0);
+ u.atk=40;u.speed=0;u.cool=10;
+ const first=enemy(180),nearest=enemy(140);
+ b.update(.1);assert.equal(u.targetId,nearest.id);assert.equal(u.attackTargetId,undefined);
+ const latest=enemy(110);b.update(.1);assert.equal(u.targetId,latest.id);assert.equal(u.attackTargetId,undefined);
+ u.cool=0;b.update(.1);assert.equal(u.attackTargetId,latest.id);
+ const closerAfterAttack=enemy(105);b.update(.1);assert.equal(u.targetId,latest.id);
+ latest.x=400;u.speed=34;const before=u.x;b.update(.1);assert.ok(u.x>before);assert.equal(u.targetId,latest.id);
+ latest.hp=0;b.update(.1);assert.equal(u.attackTargetId,undefined);assert.equal(u.targetId,closerAfterAttack.id);
+ assert.equal(first.hp,first.maxHp);assert.equal(nearest.hp,nearest.maxHp);
 });
 
-test('units acquire enemies only inside vision and reacquire after a target dies',()=>{
- for(const side of [0,1])for(const kind of ['lord','spear','ram','tower']){
+test('pre-attack targets must stay visible; an attack lock survives leaving vision',()=>{
+ for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
   const {b,u,enemy}=sightBattle(kind,side),far=enemy(100+visionRange(u)+1);
   b.update(.1);assert.equal(u.targetId,undefined);
   far.x=100+visionRange(u);b.update(.1);assert.equal(u.targetId,far.id);
-  far.x++;
-  b.update(.1);assert.equal(u.targetId,far.id);
-  far.hp=0;b.update(.1);assert.equal(u.targetId,undefined);
+  far.x++;b.update(.1);assert.equal(u.targetId,undefined);
+  far.x=120;u.atk=40;u.cool=0;b.update(.1);assert.equal(u.attackTargetId,far.id);
+  far.x=100+visionRange(u)+20;b.update(.1);assert.equal(u.targetId,far.id);
+  far.hp=0;b.update(.1);assert.equal(u.attackTargetId,undefined);assert.equal(u.targetId,undefined);
  }
 });
-
 test('lord drag overrides combat movement and cannot cross the river boundary',()=>{
  for(const side of [0,1]){
   const {b,u,enemy}=sightBattle('lord',side),target=enemy(u.x+20);
@@ -141,7 +142,7 @@ test('wounded allies stop a medic as soon as they enter healing range; overlap s
   ally.hp=0;b.update(.1);assert.ok(side?u.y>position.y:u.y<position.y);
  }
 });
-test('ordinary troops keep their building lock when a troop appears; siege keeps its building role',()=>{for(const side of [0,1])for(const kind of ['spear','archer','ram']){const {b,u}=sightBattle(kind,side);const base={id:++b.id,side:1-side,x:150,y:u.y,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(base);b.update(.1);assert.equal(u.targetId,base.id);const enemy={id:++b.id,side:1-side,x:180,y:u.y,hp:1000,maxHp:1000,atk:0,speed:0,range:0,cool:100};b.units.push(enemy);b.update(.1);assert.equal(u.targetId,base.id);}});
+test('unattacked troops switch from buildings to nearer troops; siege keeps building targets',()=>{for(const side of [0,1])for(const kind of ['spear','archer','ram']){const {b,u}=sightBattle(kind,side);const base={id:++b.id,side:1-side,x:150,y:u.y,hp:3000,maxHp:3000,atk:0,range:0,castle:true};b.buildings.push(base);b.update(.1);assert.equal(u.targetId,base.id);const enemy={id:++b.id,side:1-side,x:180,y:u.y,hp:1000,maxHp:1000,atk:0,speed:0,range:0,cool:100};b.units.push(enemy);b.update(.1);assert.equal(u.targetId,kind==='ram'?base.id:enemy.id);}});
 test('melee anticipation deals one hit at impact, can miss, and does not narrow splash',()=>{
  for(const miss of [false,true]){
   const {b,u,enemy}=sightBattle('spear',0);u.atk=40;u.cool=0;const target=enemy(140),hp=target.hp;
