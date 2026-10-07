@@ -4,7 +4,7 @@ const HEIGHT = 1066;
 const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.side}` :
   u.lord ? `lord-${u.side}-${u.assetId}` : `unit-${u.assetId}`;
 const attackTextureKey = id => `unit-${id}-attack`;
-const ATTACK_SHEET_IDS = new Set(['guanyu']);
+const ATTACK_SHEET_FRAME_SIZE = { guanyu: 444, zhangfei: 222 };
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
   try {
@@ -27,8 +27,11 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       preload() {
         for (const id of unitIds) {
           this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
-          if (ATTACK_SHEET_IDS.has(id)) this.load.spritesheet(attackTextureKey(id),
-            `/assets/units/${id}-attack.webp`, { frameWidth: 444, frameHeight: 444 });
+          if (ATTACK_SHEET_FRAME_SIZE[id]) {
+            const frameSize = ATTACK_SHEET_FRAME_SIZE[id];
+            this.load.spritesheet(attackTextureKey(id), `/assets/units/${id}-attack.webp`,
+              { frameWidth: frameSize, frameHeight: frameSize });
+          }
         }
         for (const side of [0, 1]) {
           this.load.image(`castle-${side}`, `/assets/battlefield/castle-${side ? 'red' : 'blue'}.webp`);
@@ -55,7 +58,8 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const attackAge = u.elapsed - (u.attackAt ?? -10);
           const attackSignal = attackAge >= 0 && attackAge < 0.34;
           const attack = attackSignal;
-          const attackSheet = ATTACK_SHEET_IDS.has(u.assetId) &&
+          const attackFrameSize = ATTACK_SHEET_FRAME_SIZE[u.assetId] || 444;
+          const attackSheet = Boolean(ATTACK_SHEET_FRAME_SIZE[u.assetId]) &&
             this.textures.exists(attackTextureKey(u.assetId));
           const dir = u.attackDirection || { x: u.side ? -1 : 1, y: 0 };
           const length = Math.hypot(dir.x, dir.y) || 1;
@@ -120,7 +124,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               attack ? attackPose + (attackStyle === 'sweep' ? facing * 0.16 : attackStyle === 'charge' ? facing * 0.10 : 0) :
               item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
-            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / 444 : item.scale;
+            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / attackFrameSize : item.scale;
             sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
             sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
           }
