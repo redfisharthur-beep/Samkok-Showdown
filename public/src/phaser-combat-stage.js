@@ -33,6 +33,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
         }
       }
       create() {
+        this.fx = this.add.graphics().setDepth(1000000);
         this.ready = true;
       }
       update(_time, delta) {
