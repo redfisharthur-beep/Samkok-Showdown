@@ -73,6 +73,8 @@ function sightBattle(kind,side){
  return {b,u,enemy};
 }
 
+test('medics attack the nearest enemy when no ally needs healing, and heal before attacking',()=>{const {b,u,enemy}=sightBattle('medic',0);u.atk=CARDS.find(c=>c.id==='medic').atk;u.cool=0;const far=enemy(170),near=enemy(140);const ally={id:++b.id,side:0,x:110,y:u.y,hp:50,maxHp:100,atk:0,speed:0};b.units.push(ally);b.update(.1);assert.equal(u.targetId,near.id);assert.equal(ally.hp,95);assert.equal(near.hp,near.maxHp);ally.hp=ally.maxHp;u.cool=0;for(let i=0;i<5;i++)b.update(.1);assert.equal(u.targetId,near.id);assert.ok(near.hp<near.maxHp);assert.equal(far.hp,far.maxHp);});
+
 test('units acquire the nearest enemy and keep that lock until it dies',()=>{
  for(const side of [0,1])for(const kind of ['lord','spear','archer','ram','tower']){
   const {b,u,enemy}=sightBattle(kind,side),far=enemy(240),near=enemy(140);
