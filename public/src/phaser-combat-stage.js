@@ -20,6 +20,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       constructor() {
         super('combat');
         this.units = new Map();
+        this.combatEffects = [];
       }
       preload() {
         for (const id of unitIds) this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
@@ -41,6 +42,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
         const blend = 1 - Math.exp(-Math.min(delta, 50) / 32);
         const fx = this.fx;
         fx.clear();
+        const clamp01 = value => Math.max(0, Math.min(1, value));
         for (const item of this.units.values()) {
           const u = item.state, sprite = item.sprite;
           if (!u) continue;
@@ -104,7 +106,11 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
             const cx = sprite.x + nx * 18, cy = sprite.y + ny * 18;
             const radius = u.lord ? 64 : u.type === 'general' ? 55 : 46;
             const alpha = Math.sin(progress * Math.PI) * 0.95;
-            fx.lineStyle(5, 0xf0d49a, alpha);
+            fx.lineStyle(12, 0xffa94d, alpha * 0.3);
+            fx.beginPath();
+            fx.arc(cx, cy, radius, angle - 1.02, angle + 1.02, false);
+            fx.strokePath();
+            fx.lineStyle(6, 0xf0b957, alpha);
             fx.beginPath();
             fx.arc(cx, cy, radius, angle - 0.9, angle + 0.9, false);
             fx.strokePath();
@@ -129,6 +135,76 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               );
             }
           }
+
+          if (dead && u.deathAt !== undefined && deathAge < 0.38) {
+            const progress = clamp01(deathAge / 0.38);
+            const radius = 18 + progress * 34;
+            const alpha = (1 - progress) * 0.72;
+            fx.lineStyle(4, 0xffcf78, alpha);
+            fx.strokeCircle(sprite.x, sprite.y - 3, radius);
+            for (let n = 0; n < 8; n++) {
+              const angle = n * Math.PI / 4 + progress * 0.6;
+              const inner = radius * 0.72, outer = inner + 12 * (1 - progress);
+              fx.lineStyle(2, 0xffe7bd, alpha);
+              fx.lineBetween(
+                sprite.x + Math.cos(angle) * inner, sprite.y + Math.sin(angle) * inner,
+                sprite.x + Math.cos(angle) * outer, sprite.y + Math.sin(angle) * outer
+              );
+            }
+          }
+        }
+
+        for (const effect of this.combatEffects) {
+          if (effect.id === 'projectile') {
+            const progress = clamp01((effect.age || 0) / Math.max(0.01, effect.duration || 0.32));
+            const dx = effect.x - effect.fromX, dy = effect.y - effect.fromY;
+            const length = Math.hypot(dx, dy) || 1;
+            const bend = effect.kind === 'stone' ? -18 : effect.kind === 'magic' ? 10 : 7;
+            const pointAt = t => ({
+              x: effect.fromX + dx * t - dy / length * Math.sin(t * Math.PI) * bend,
+              y: effect.fromY + dy * t + dx / length * Math.sin(t * Math.PI) * bend
+            });
+            const head = pointAt(progress), tail = pointAt(Math.max(0, progress - 0.2));
+            const color = effect.kind === 'magic' ? 0x9bdcff :
+              effect.kind === 'stone' ? 0xd7d3c8 : 0xffd178;
+            const size = effect.kind === 'stone' ? 8 : effect.kind === 'magic' ? 6 : 4;
+            const fade = 1 - progress * 0.22;
+            fx.lineStyle(size * 3, color, 0.22 * fade);
+            fx.lineBetween(tail.x, tail.y, head.x, head.y);
+            fx.lineStyle(size, color, 0.82 * fade);
+            fx.lineBetween(tail.x, tail.y, head.x, head.y);
+            fx.fillStyle(effect.kind === 'magic' ? 0xe7f8ff : 0xffefc2, 0.96 * fade);
+            fx.fillCircle(head.x, head.y, size);
+            if (effect.kind !== 'stone') {
+              const angle = Math.atan2(dy, dx);
+              fx.lineStyle(2, 0xffffff, 0.88 * fade);
+              fx.lineBetween(head.x, head.y,
+                head.x - Math.cos(angle - 0.42) * size * 2.4,
+                head.y - Math.sin(angle - 0.42) * size * 2.4);
+              fx.lineBetween(head.x, head.y,
+                head.x - Math.cos(angle + 0.42) * size * 2.4,
+                head.y - Math.sin(angle + 0.42) * size * 2.4);
+            }
+          } else if (effect.id === 'hit' || effect.id === 'melee') {
+            const progress = clamp01((effect.age || 0) / Math.max(0.01, effect.duration || 0.2));
+            const radius = (effect.radius || 15) + progress * (effect.heavy ? 42 : 24);
+            const alpha = (1 - progress) * (effect.heavy ? 0.95 : 0.68);
+            const color = effect.heavy ? 0xffbd63 : 0xffe6b5;
+            fx.lineStyle(effect.heavy ? 7 : 4, color, alpha * 0.35);
+            fx.strokeCircle(effect.x, effect.y, radius);
+            fx.lineStyle(effect.heavy ? 3 : 2, 0xffffff, alpha);
+            fx.strokeCircle(effect.x, effect.y, Math.max(2, radius - 4));
+            const sparks = effect.heavy ? 10 : 6;
+            for (let n = 0; n < sparks; n++) {
+              const angle = n * Math.PI * 2 / sparks + progress * 0.35;
+              const inner = radius + 2, outer = inner + (effect.heavy ? 12 : 7) * (1 - progress);
+              fx.lineStyle(effect.heavy ? 3 : 2, color, alpha);
+              fx.lineBetween(
+                effect.x + Math.cos(angle) * inner, effect.y + Math.sin(angle) * inner,
+                effect.x + Math.cos(angle) * outer, effect.y + Math.sin(angle) * outer
+              );
+            }
+          }
         }
       }
     }
@@ -147,6 +223,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       owns(unit) { return hasTexture(unit); },
       sync(view) {
         if (!scene?.ready) return;
+        scene.combatEffects = view.effects || [];
         const live = new Set();
         for (const u of [...view.buildings, ...view.units]) {
           if (!hasTexture(u)) continue;
