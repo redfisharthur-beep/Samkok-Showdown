@@ -3,6 +3,8 @@ const WIDTH = 600;
 const HEIGHT = 1066;
 const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.side}` :
   u.lord ? `lord-${u.side}-${u.assetId}` : `unit-${u.assetId}`;
+const attackTextureKey = id => `unit-${id}-attack`;
+const ATTACK_SHEET_IDS = new Set(['guanyu']);
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
   try {
@@ -23,7 +25,11 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
         this.combatEffects = [];
       }
       preload() {
-        for (const id of unitIds) this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
+        for (const id of unitIds) {
+          this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
+          if (ATTACK_SHEET_IDS.has(id)) this.load.spritesheet(attackTextureKey(id),
+            `/assets/units/${id}-attack.webp`, { frameWidth: 444, frameHeight: 444 });
+        }
         for (const side of [0, 1]) {
           this.load.image(`castle-${side}`, `/assets/battlefield/castle-${side ? 'red' : 'blue'}.webp`);
           this.load.image(`tower-${side}`, `/assets/battlefield/tower-${side ? 'red' : 'blue'}.webp`);
@@ -49,6 +55,8 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const attackAge = u.elapsed - (u.attackAt ?? -10);
           const attackSignal = attackAge >= 0 && attackAge < 0.34;
           const attack = attackSignal;
+          const attackSheet = ATTACK_SHEET_IDS.has(u.assetId) &&
+            this.textures.exists(attackTextureKey(u.assetId));
           const dir = u.attackDirection || { x: u.side ? -1 : 1, y: 0 };
           const length = Math.hypot(dir.x, dir.y) || 1;
           const nx = dir.x / length, ny = dir.y / length;
@@ -87,6 +95,11 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const frozen = now < item.freezeUntil;
 
           if (!frozen) {
+            if (!dead && attackSignal && attackSheet) {
+              const frame = Math.min(7, Math.floor(attackAge * 24));
+              sprite.setTexture(attackTextureKey(u.assetId), frame);
+            } else if (sprite.texture.key !== textureKey(u)) sprite.setTexture(textureKey(u));
+            const playingAttackSheet = !dead && attackSignal && attackSheet;
             item.renderX += (u.x + item.offsetX - item.renderX) * blend;
             item.renderY += (u.y + item.offsetY - item.renderY) * blend;
             const stride = Math.sin(phase), step = Math.cos(phase);
@@ -107,7 +120,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               attack ? attackPose + (attackStyle === 'sweep' ? facing * 0.16 : attackStyle === 'charge' ? facing * 0.10 : 0) :
               item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
-            const spriteScale = item.scale;
+            const spriteScale = playingAttackSheet ? item.scale * item.sourceSize / 444 : item.scale;
             sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
             sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
           }
@@ -260,7 +273,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               .setDisplaySize(image.width * scale, image.height * scale)
               .setOrigin(0.5, 0.5);
             item = {
-              sprite, scale, state: null, renderX: spriteX, renderY: spriteY,
+              sprite, scale, sourceSize: Math.max(image.width, image.height), state: null, renderX: spriteX, renderY: spriteY,
               offsetX: spriteX - u.x, offsetY: spriteY - u.y,
               lastX: u.x, lastY: u.y, lastElapsed: view.elapsed, moving: false,
               lastHurtAt: u.hurtAt, freezeUntil: 0
