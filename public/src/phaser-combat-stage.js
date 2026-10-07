@@ -53,20 +53,26 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const length = Math.hypot(dir.x, dir.y) || 1;
           const nx = dir.x / length, ny = dir.y / length;
           const melee = (u.range || 0) < 100;
+          const attackStyle = ['投石', '攻城'].includes(u.ability) ? 'siege' :
+            ['落雷', '火焰', '降防', '魅惑', '治療'].includes(u.ability) ? 'spell' :
+            u.ability === '連射' ? 'rapid' :
+            u.ability === '突進' || u.assetId === 'cavalry' ? 'charge' :
+            melee ? 'sweep' : 'ranged';
+          const strikePower = ({sweep: 23, charge: 29, rapid: -8, ranged: -10, spell: -7, siege: -12})[attackStyle];
           let thrust = 0, attackScale = 1;
           if (attack) {
-            if (attackAge < 0.08) {
-              const prep = Math.sin(attackAge / 0.08 * Math.PI / 2);
-              thrust = -9 * prep;
-              attackScale = 1 - 0.08 * prep;
-            } else if (attackAge < 0.17) {
-              const strike = Math.sin((attackAge - 0.08) / 0.09 * Math.PI / 2);
-              thrust = (melee ? 22 : -5) * strike;
-              attackScale = 1 + 0.08 * strike;
+            if (attackAge < 0.10) {
+              const prep = Math.sin(attackAge / 0.10 * Math.PI / 2);
+              thrust = attackStyle === 'charge' ? -14 * prep : attackStyle === 'sweep' ? -12 * prep : 7 * prep;
+              attackScale = 1 - (attackStyle === 'spell' ? 0.04 : 0.07) * prep;
+            } else if (attackAge < 0.19) {
+              const strike = Math.sin((attackAge - 0.10) / 0.09 * Math.PI / 2);
+              thrust = strikePower * strike;
+              attackScale = 1 + (attackStyle === 'spell' ? 0.11 : attackStyle === 'charge' ? 0.12 : 0.075) * strike;
             } else {
-              const recover = Math.max(0, 1 - (attackAge - 0.17) / 0.17);
-              thrust = (melee ? 22 : -5) * recover;
-              attackScale = 1 + 0.08 * recover;
+              const recover = Math.max(0, 1 - (attackAge - 0.19) / 0.15);
+              thrust = strikePower * recover;
+              attackScale = 1 + 0.06 * recover;
             }
           }
           const hurtAge = u.elapsed - (u.hurtAt ?? -10);
@@ -91,10 +97,14 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               item.renderY + bob + ny * thrust + (dead ? deathAge * 24 : 0)
             );
             const facing = u.side ? -1 : 1;
+            const attackPose = !attack ? 0 :
+              attackAge < 0.10 ? -ny * (attackStyle === 'spell' || attackStyle === 'siege' ? 0.22 : 0.15) :
+              attackAge < 0.19 ? ny * (attackStyle === 'sweep' ? 0.24 : attackStyle === 'charge' ? 0.10 : -0.08) :
+              -ny * 0.04;
             sprite.rotation = dead ? facing * Math.min(1.35, deathAge * 4.5) :
               hurt ? -facing * 0.22 :
               feared ? Math.sin(phase * 2.3) * 0.1 :
-              attack && attackAge < 0.08 ? -ny * 0.12 :
+              attack ? attackPose + (attackStyle === 'sweep' ? facing * 0.16 : attackStyle === 'charge' ? facing * 0.10 : 0) :
               item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
             const spriteScale = item.scale;
