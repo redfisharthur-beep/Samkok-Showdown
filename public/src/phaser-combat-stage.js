@@ -24,7 +24,8 @@ const ATTACK_SHEETS = {
   zhangjiao: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
   shield: { frameWidth: 757, frameHeight: 520, frames: 4, fps: 12 },
   archer: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
-  cavalry: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 }
+  cavalry: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
+  medic: { frameWidth: 757, frameHeight: 520, frames: 4, fps: 12 }
 };
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
