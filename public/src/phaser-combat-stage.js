@@ -18,7 +18,8 @@ const ATTACK_SHEETS = {
   taishici: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
   sunshangxiang: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
   lvbu: { frameWidth: 766, frameHeight: 513, frames: 4, fps: 12 },
-  spear: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 }
+  spear: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 },
+  diaochan: { frameWidth: 768, frameHeight: 512, frames: 4, fps: 12 }
 };
 
 export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
