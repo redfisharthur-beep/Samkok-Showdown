@@ -24,6 +24,12 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       }
       preload() {
         for (const id of unitIds) this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
+        if (unitIds.includes('guanyu')) {
+          this.load.spritesheet('guanyu-attack', '/assets/units/guanyu-attack.webp', {
+            frameWidth: 444,
+            frameHeight: 444
+          });
+        }
         for (const side of [0, 1]) {
           this.load.image(`castle-${side}`, `/assets/battlefield/castle-${side ? 'red' : 'blue'}.webp`);
           this.load.image(`tower-${side}`, `/assets/battlefield/tower-${side ? 'red' : 'blue'}.webp`);
@@ -35,6 +41,14 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
       }
       create() {
         this.fx = this.add.graphics().setDepth(1000000);
+        if (this.textures.exists('guanyu-attack')) {
+          this.anims.create({
+            key: 'guanyu-attack',
+            frames: this.anims.generateFrameNumbers('guanyu-attack', { start: 0, end: 7 }),
+            frameRate: 24,
+            repeat: 0
+          });
+        }
         this.ready = true;
       }
       update(_time, delta) {
@@ -47,7 +61,8 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const u = item.state, sprite = item.sprite;
           if (!u) continue;
           const attackAge = u.elapsed - (u.attackAt ?? -10);
-          const attack = attackAge >= 0 && attackAge < 0.34;
+          const attackSignal = attackAge >= 0 && attackAge < 0.34;
+          const attack = attackSignal && !item.attackClip;
           const dir = u.attackDirection || { x: u.side ? -1 : 1, y: 0 };
           const length = Math.hypot(dir.x, dir.y) || 1;
           const nx = dir.x / length, ny = dir.y / length;
@@ -91,8 +106,9 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               attack && attackAge < 0.08 ? -ny * 0.12 :
               item.moving ? Math.sin(phase) * 0.055 : Math.sin(phase * 0.3) * 0.025;
             const breath = 1 + Math.sin(phase * 0.55) * (item.moving ? 0.018 : 0.025);
-            sprite.scaleX = item.scale * breath * attackScale * (hurt ? 0.9 : 1);
-            sprite.scaleY = item.scale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
+            const spriteScale = item.attackClip ? item.baseSize / 444 : item.scale;
+            sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
+            sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
           }
 
           if (hurtAge >= 0 && hurtAge < 0.075) sprite.setTintFill(0xffffff);
@@ -100,7 +116,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           else sprite.clearTint();
           sprite.setAlpha(dead ? Math.max(0, 1 - deathAge / 0.4) : 1);
           sprite.setDepth(u.y * 10 + u.id / 1000);
-          if (attack && melee && attackAge >= 0.075 && attackAge < 0.25) {
+          if (attackSignal && melee && attackAge >= 0.075 && attackAge < 0.25) {
             const progress = (attackAge - 0.075) / 0.175;
             const angle = Math.atan2(ny, nx);
             const cx = sprite.x + nx * 18, cy = sprite.y + ny * 18;
@@ -238,15 +254,20 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
             const actorY = u.tower && u.side ? u.y - 6 : u.y;
             const spriteY = building ? actorY + (u.castle ? 26 : 23) -
               image.height * scale / 2 : actorY;
-            const sprite = scene.add.image(spriteX, spriteY, textureKey(u))
+            const sprite = scene.add.sprite(spriteX, spriteY, textureKey(u))
               .setDisplaySize(image.width * scale, image.height * scale)
               .setOrigin(0.5, 0.5);
             item = {
-              sprite, scale: 1, state: null, renderX: spriteX, renderY: spriteY,
+              sprite, scale, baseSize: width, state: null, renderX: spriteX, renderY: spriteY,
               offsetX: spriteX - u.x, offsetY: spriteY - u.y,
               lastX: u.x, lastY: u.y, lastElapsed: view.elapsed, moving: false,
-              lastHurtAt: u.hurtAt, freezeUntil: 0
+              lastHurtAt: u.hurtAt, lastAttackAt: u.attackAt, attackClip: false, freezeUntil: 0
             };
+            sprite.on('animationcomplete', animation => {
+              if (animation?.key !== 'guanyu-attack') return;
+              item.attackClip = false;
+              sprite.setTexture(textureKey(item.state || u));
+            });
             scene.units.set(u.id, item);
           }
           const delta = Math.max(0.001, view.elapsed - item.lastElapsed);
@@ -257,6 +278,16 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           if (u.hurtAt !== undefined && u.hurtAt !== item.lastHurtAt) {
             item.freezeUntil = performance.now() + 52;
             item.lastHurtAt = u.hurtAt;
+          }
+          if (u.hp <= 0 && item.attackClip) {
+            item.attackClip = false;
+            sprite.anims.stop();
+            sprite.setTexture(textureKey(u));
+          } else if (u.assetId === 'guanyu' && u.type === 'general' && u.hp > 0 &&
+            u.attackAt !== undefined && u.attackAt !== item.lastAttackAt && scene.anims.exists('guanyu-attack')) {
+            item.lastAttackAt = u.attackAt;
+            item.attackClip = true;
+            sprite.play('guanyu-attack', true);
           }
           item.state = { ...u, elapsed: view.elapsed };
         }
