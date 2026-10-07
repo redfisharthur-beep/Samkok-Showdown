@@ -1,12 +1,10 @@
-import {CARDS,FACTIONS} from './data.js';
-
 const PHASER_URL = 'https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.esm.js';
 const WIDTH = 600;
 const HEIGHT = 1066;
 const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.side}` :
   u.lord ? `lord-${u.side}-${u.assetId}` : `unit-${u.assetId}`;
 
-export async function createPhaserCombatStage(arena) {
+export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={}) {
   try {
     const Phaser = await import(PHASER_URL);
     if (!arena?.isConnected) return null;
@@ -24,14 +22,12 @@ export async function createPhaserCombatStage(arena) {
         this.units = new Map();
       }
       preload() {
-        for (const c of CARDS) {
-          if (c.type !== 'spell') this.load.image(`unit-${c.id}`, `/assets/units/${c.id}.webp`);
-        }
+        for (const id of unitIds) this.load.image(`unit-${id}`, `/assets/units/${id}.webp`);
         for (const side of [0, 1]) {
           this.load.image(`castle-${side}`, `/assets/battlefield/castle-${side ? 'red' : 'blue'}.webp`);
           this.load.image(`tower-${side}`, `/assets/battlefield/tower-${side ? 'red' : 'blue'}.webp`);
         }
-        for (const faction of Object.keys(FACTIONS)) {
+        for (const faction of factions) {
           this.load.image(`lord-0-${faction}`, `/assets/lords/b-${faction}.webp`);
           this.load.image(`lord-1-${faction}`, `/assets/lords/r-${faction}.webp`);
         }
@@ -42,8 +38,10 @@ export async function createPhaserCombatStage(arena) {
       update(_time, delta) {
         const now = performance.now();
         const blend = 1 - Math.exp(-Math.min(delta, 50) / 32);
+        const fx = this.fx;
+        fx.clear();
         for (const item of this.units.values()) {
-          const u = item.state, sprite = item.sprite, fx = item.fx;
+          const u = item.state, sprite = item.sprite;
           if (!u) continue;
           const attackAge = u.elapsed - (u.attackAt ?? -10);
           const attack = attackAge >= 0 && attackAge < 0.34;
@@ -99,9 +97,6 @@ export async function createPhaserCombatStage(arena) {
           else sprite.clearTint();
           sprite.setAlpha(dead ? Math.max(0, 1 - deathAge / 0.4) : 1);
           sprite.setDepth(u.y * 10 + u.id / 1000);
-          fx.setDepth(u.y * 10 + u.id / 1000 + 1);
-          fx.clear();
-
           if (attack && melee && attackAge >= 0.075 && attackAge < 0.25) {
             const progress = (attackAge - 0.075) / 0.175;
             const angle = Math.atan2(ny, nx);
@@ -168,9 +163,8 @@ export async function createPhaserCombatStage(arena) {
             const sprite = scene.add.image(spriteX, spriteY, textureKey(u))
               .setDisplaySize(image.width * scale, image.height * scale)
               .setOrigin(0.5, 0.5);
-            const fx = scene.add.graphics();
             item = {
-              sprite, fx, scale: 1, state: null, renderX: spriteX, renderY: spriteY,
+              sprite, scale: 1, state: null, renderX: spriteX, renderY: spriteY,
               offsetX: spriteX - u.x, offsetY: spriteY - u.y,
               lastX: u.x, lastY: u.y, lastElapsed: view.elapsed, moving: false,
               lastHurtAt: u.hurtAt, freezeUntil: 0
@@ -191,7 +185,6 @@ export async function createPhaserCombatStage(arena) {
         for (const [id, item] of scene.units) {
           if (!live.has(id)) {
             item.sprite.destroy();
-            item.fx.destroy();
             scene.units.delete(id);
           }
         }
