@@ -73,16 +73,21 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
           const hurt = hurtAge >= 0 && hurtAge < 0.26;
           const dead = u.hp <= 0;
           const feared = (u.fearUntil || 0) > u.elapsed;
-          const phase = u.elapsed * (item.moving ? 8 : 2.2) + u.id;
+          const gait = ['ram', 'catapult'].includes(u.assetId) ? 'machine' :
+            u.assetId === 'cavalry' ? 'cavalry' :
+            ['shield', 'spear', 'ram', 'catapult', 'dianwei', 'zhangfei', 'xiahou', 'huaxiong', 'lvbu'].includes(u.assetId) ? 'heavy' : 'light';
+          const phase = u.elapsed * (item.moving ? (gait === 'cavalry' ? 11 : gait === 'heavy' ? 7 : gait === 'machine' ? 5 : 9) : 2.2) + u.id;
           const deathAge = Math.max(0, u.elapsed - (u.deathAt ?? u.elapsed));
           const frozen = now < item.freezeUntil;
 
           if (!frozen) {
             item.renderX += (u.x + item.offsetX - item.renderX) * blend;
             item.renderY += (u.y + item.offsetY - item.renderY) * blend;
-            const bob = item.moving ? Math.abs(Math.sin(phase)) * -4 : Math.sin(phase) * 1.2;
+            const stride = Math.sin(phase), step = Math.cos(phase);
+            const bob = item.moving ? -Math.abs(stride) * (gait === 'cavalry' ? 7 : gait === 'heavy' ? 3.8 : gait === 'machine' ? 1.2 : 5.5) : Math.sin(phase) * 1.2;
+            const stepSway = item.moving && gait !== 'machine' ? step * (gait === 'cavalry' ? 2.4 : gait === 'heavy' ? 1.2 : 1.8) : 0;
             sprite.setPosition(
-              item.renderX + nx * thrust + (hurt ? Math.sin(hurtAge * 95) * 3 : 0),
+              item.renderX + stepSway + nx * thrust + (hurt ? Math.sin(hurtAge * 95) * 3 : 0),
               item.renderY + bob + ny * thrust + (dead ? deathAge * 24 : 0)
             );
             const facing = u.side ? -1 : 1;
@@ -90,8 +95,8 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
               hurt ? -facing * 0.22 :
               feared ? Math.sin(phase * 2.3) * 0.1 :
               attack && attackAge < 0.08 ? -ny * 0.12 :
-              item.moving ? Math.sin(phase) * 0.055 : Math.sin(phase * 0.3) * 0.025;
-            const breath = 1 + Math.sin(phase * 0.55) * (item.moving ? 0.018 : 0.025);
+              item.moving ? stride * (gait === 'cavalry' ? 0.12 : gait === 'heavy' ? 0.075 : gait === 'machine' ? 0.025 : 0.105) : Math.sin(phase * 0.3) * 0.025;
+            const breath = 1 + Math.sin(phase * (item.moving ? 1 : 0.55)) * (item.moving ? (gait === 'heavy' ? 0.045 : 0.035) : 0.025);
             const spriteScale = item.scale;
             sprite.scaleX = spriteScale * breath * attackScale * (hurt ? 0.9 : 1);
             sprite.scaleY = spriteScale * (2 - breath) * attackScale * (hurt ? 1.12 : 1);
