@@ -9,7 +9,7 @@ import {FACTIONS,CARDS,card,pool,defaultDeck,validateDeck,asset,trialDeck} from 
 import {PROVINCES,provinceAt,TERRITORY_KEYS} from './territory.js';
 import {Battle,W,H,TERRAIN,lordPoint,smoothTrialDifficulty,placementPoint,CARD_PANEL_TOP} from './engine.js';
 const app=document.querySelector('#app'),KEY='samkok-v1',sound=createGameAudio(),cap=globalThis.window?.Capacitor||globalThis.Capacitor,nativeApp=Boolean(cap?.isNativePlatform?.());
-async function lineLogin(){if(!nativeApp){location.assign('/api/auth/line');return;}const browser=cap?.Plugins?.Browser;if(!browser){location.assign('/api/auth/line');return;}await browser.open({url:location.origin+'/api/auth/line?client=app'});}
+async function lineLogin(){if(!nativeApp){location.assign('/api/auth/line');return;}const nativeLine=cap?.Plugins?.LineLogin;if(!nativeLine){alert('此 APK 尚未包含新版 LINE 登入，請更新遊戲');return;}try{const result=await nativeLine.login();await api('auth/line-native',{idToken:result.idToken,nonce:result.nonce});location.replace('/');}catch(e){console.error('Native LINE login failed',e);alert(e?.message||'LINE 登入失敗，請重新登入');}}
 async function acceptAppLogin(url){let parsed;try{parsed=new URL(url);}catch{return;}if(parsed.protocol!=='samkokshowdown:'||parsed.hostname!=='auth')return;const ticket=parsed.searchParams.get('ticket');if(!ticket)return;try{await cap?.Plugins?.Browser?.close?.();await api('auth/app-session',{ticket});location.replace('/');}catch{alert('LINE 登入失敗，請重新登入');}}
 if(nativeApp)cap?.Plugins?.App?.addListener?.('appUrlOpen',event=>acceptAppLogin(event.url));
 document.addEventListener('pointerdown',()=>sound.unlock(),{capture:true});
