@@ -4,7 +4,11 @@ const HEIGHT = 1066;
 const textureKey = u => u.castle ? `castle-${u.side}` : u.tower ? `tower-${u.side}` :
   u.lord ? `lord-${u.side}-${u.assetId}` : `unit-${u.assetId}`;
 const attackTextureKey = id => `unit-${id}-attack`;
+export const LORD_ATTACK_SHEETS = Object.fromEntries(["shu", "wei", "wu", "qun"].map(id => [id, { frameWidth: 640, frameHeight: 640, frames: 4, fps: 12 }]));
 export const ATTACK_SHEETS = {
+  ram: { frameWidth: 640, frameHeight: 640, frames: 4, fps: 12 },
+  catapult: { frameWidth: 640, frameHeight: 640, frames: 4, fps: 12 },
+  scout: { frameWidth: 640, frameHeight: 640, frames: 4, fps: 12 },
   guanyu: { frameWidth: 444, frameHeight: 444, frames: 8, fps: 24 },
   zhangfei: { frameWidth: 632, frameHeight: 656, frames: 4, fps: 12 },
   zhaoyun: { frameWidth: 724, frameHeight: 544, frames: 4, fps: 12 },
@@ -273,7 +277,7 @@ export async function createPhaserCombatStage(arena, {unitIds=[], factions=[]}={
     });
     const scene = game.scene.getScene('combat');
     const hasTexture = u => Boolean(scene?.ready && scene.textures.exists(textureKey(u)) &&
-      !ATTACK_SHEETS[u.assetId]);
+      !(u.lord ? LORD_ATTACK_SHEETS[u.assetId] : ATTACK_SHEETS[u.assetId]));
 
     return {
       owns(unit) { return hasTexture(unit); },

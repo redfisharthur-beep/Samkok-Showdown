@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 import * as engine from '../public/src/engine.js';
 import * as data from '../public/src/data.js';
 import * as sync from '../public/src/battle-sync.js';
+import {ATTACK_SHEETS,LORD_ATTACK_SHEETS} from '../public/src/phaser-combat-stage.js';
 const source=readFileSync(new URL('../public/src/app.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replace(/\ninitialize\(\);\s*$/,'');
 const clone=value=>JSON.parse(JSON.stringify(value));
 function harness(fetch){
@@ -12,7 +13,7 @@ function harness(fetch){
  const context=new Proxy({}, {get:(o,k)=>o[k]??((...args)=>calls.push({method:k,args})),set:(o,k,v)=>(o[k]=v,true)});
  const node={textContent:'',querySelector:()=>null,querySelectorAll:()=>[],getContext:()=>context};
  const document={querySelector:()=>node,addEventListener(){},createElement:()=>{surfaces++;return {...node};}};
- const sandbox={...engine,...data,...sync,document,localStorage:{getItem:()=>null,setItem(){}},sessionStorage:{removeItem(){}},performance:{now:()=>1000},crypto,fetch,AbortController,structuredClone,Image:class{complete=true;naturalWidth=200;naturalHeight=300;},createGameAudio:()=>({}),matchMedia:()=>({matches:false}),setTimeout,clearTimeout,setInterval,clearInterval,cancelAnimationFrame(){},location:{protocol:'https:',host:'example.com'}};
+ const sandbox={ATTACK_SHEETS,LORD_ATTACK_SHEETS,...engine,...data,...sync,document,localStorage:{getItem:()=>null,setItem(){}},sessionStorage:{removeItem(){}},performance:{now:()=>1000},crypto,fetch,AbortController,structuredClone,Image:class{complete=true;naturalWidth=200;naturalHeight=300;},createGameAudio:()=>({}),matchMedia:()=>({matches:false}),setTimeout,clearTimeout,setInterval,clearInterval,cancelAnimationFrame(){},location:{protocol:'https:',host:'example.com'}};
  vm.createContext(sandbox);vm.runInContext(source+`\nglobalThis.hooks={set(b,o=null){battle=b;online=o;ui={ctx:globalThis.ctx};},deployCard,command,acceptState,draw,drag(value){drag=value;},getBattle:()=>battle};`,sandbox);sandbox.ctx=context;
  return {hooks:sandbox.hooks,calls,surfaces:()=>surfaces};
 }
